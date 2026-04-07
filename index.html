@@ -1,1 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Line Coach</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #f5f5f0; color: #111; min-height: 100vh; }
 
+  .app { max-width: 760px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+
+  .header { text-align: center; margin-bottom: 2rem; }
+  .header h1 { font-size: 22px; font-weight: 500; margin-bottom: 4px; }
+  .header p { font-size: 14px; color: #666; }
+
+  .card { background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+
+  label { font-size: 13px; color: #666; display: block; margin-bottom: 6px; }
+  input[type=text], textarea, select {
+    width: 100%; padding: 8px 12px;
+    border: 0.5px solid rgba(0,0,0,0.2);
+    border-radius: 8px; font-size: 14px;
+    background: #fff; color: #111;
+    outline: none; font-family: inherit;
+  }
+  textarea { resize: vertical; min-height: 160px; line-height: 1.6; }
+  input[type=text]:focus, textarea:focus { border-color: #378add; box-shadow: 0 0 0 2px rgba(55,138,221,0.15); }
+
+  button {
+    padding: 8px 18px;
+    border: 0.5px solid rgba(0,0,0,0.2);
+    border-radius: 8px; background: transparent;
+    color: #111; font-size: 14px; cursor: pointer;
+    font-family: inherit; transition: background 0.15s;
+  }
+  button:hover { background: #f0f0ec; }
+  button:active { transform: scale(0.98); }
+  button.primary { background: #1A3D6B; color: #fff; border-color: #1A3D6B; }
+  button.primary:hover { background: #14305a; }
+  button.success { background: #0F6E56; color: #fff; border-color: #0F6E56; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .row button { flex: 1; min-width: 120px; }
+
+  .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 6px; font-weight: 500; }
+  .badge-blue { background: #E6F1FB; color: #185FA5; }
+
+  .cue-block { background: #f8f8f4; border-left: 3px solid #B4B2A9; border-radius: 0 8px 8px 0; padding: 10px 14px; margin-bottom: 10px; }
+  .cue-speaker { font-size: 12px; font-weight: 500; color: #666; margin-bottom: 4px; }
+  .cue-text { font-size: 14px; line-height: 1.6; color: #555; font-style: italic; }
+
+  .your-line-block { border-left: 3px solid #1A3D6B; background: #E6F1FB; border-radius: 0 8px 8px 0; padding: 10px 14px; margin-bottom: 14px; }
+  .your-line-speaker { font-size: 12px; font-weight: 500; color: #185FA5; margin-bottom: 4px; }
+  .your-line-text { font-size: 14px; line-height: 1.6; color: #0C447C; }
+
+  .feedback-block { border: 0.5px solid rgba(0,0,0,0.12); border-radius: 8px; padding: 12px 14px; margin-top: 10px; font-size: 14px; line-height: 1.7; }
+  .feedback-block.loading { color: #666; font-style: italic; }
+
+  .progress-bar-wrap { background: #eee; border-radius: 99px; height: 6px; margin-bottom: 4px; }
+  .progress-bar { height: 6px; border-radius: 99px; background: #1A3D6B; transition: width 0.4s ease; }
+
+  .tab-row { display: flex; gap: 8px; margin-bottom: 1rem; }
+  .tab { padding: 6px 16px; border-radius: 8px; border: 0.5px solid rgba(0,0,0,0.15); font-size: 13px; cursor: pointer; background: transparent; color: #666; }
+  .tab.active { background: #1A3D6B; color: #fff; border-color: #1A3D6B; }
+
+  .hint { font-size: 12px; color: #999; margin-top: 4px; }
+
+  .scene-tag { font-size: 11px; color: #aaa; font-style: italic; margin-bottom: 8px; }
+
+  .upload-zone { border: 1.5px dashed rgba(0,0,0,0.2); border-radius: 10px; padding: 2rem; text-align: center; cursor: pointer; transition: border-color 0.2s; }
+  .upload-zone:hover { border-color: #378add; }
+  .upload-zone input { display: none; }
+
+  .line-list { max-height: 260px; overflow-y: auto; }
+  .line-item { display: flex; gap: 8px; align-items: flex-start; padding: 8px 0; border-bottom: 0.5px solid rgba(0,0,0,0.08); font-size: 13px; }
+  .line-num { color: #aaa; min-width: 24px; font-size: 11px; padding-top: 2px; }
+
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(0,0,0,0.1); border-top-color: #1A3D6B; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .hidden { display: none !important; }
+  hr { border: none; border-top: 0.5px solid rgba(0,0,0,0.1); margin: 1rem 0; }
+
+  .other-line { background: #f5f5f0; border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; font-size: 14px; }
+  .other-speaker { font-size: 11px; font-weight: 500; color: #888; margin-bottom: 2px; }
+
+  .navigation { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+  .nav-info { font-size: 13px; color: #888; }
+
+  .error { font-size: 12px; color: #A32D2D; margin-top: 6px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>Line Coach</h1>
+    <p>AI-powered script memorisation &amp; delivery coaching</p>
+  </div>
+
+  <!-- STEP 1: Setup -->
+  <div id="step-setup" class="card">
+    <label style="font-size:15px;font-weight:500;color:#111;margin-bottom:12px">Step 1 — Load your script</label>
+
+    <div class="tab-row">
+      <button class="tab active" onclick="switchInput('paste')">Paste text</button>
+      <button class="tab" onclick="switchInput('pdf')">Upload PDF</button>
+    </div>
+
+    <div id="input-paste">
+      <textarea id="script-text" placeholder="Paste the full script here — all characters, all lines..."></textarea>
+    </div>
+
+    <div id="input-pdf" class="hidden">
+      <div class="upload-zone" onclick="document.getElementById('pdf-file').click()">
+        <input type="file" id="pdf-file" accept="application/pdf" onchange="handlePDF(this)" />
+        <div style="font-size:28px;margin-bottom:8px">📄</div>
+        <div style="font-size:14px;color:#666">Click to choose a PDF script</div>
+        <div class="hint" id="pdf-status" style="margin-top:6px">PDF text will be extracted automatically</div>
+      </div>
+    </div>
+
+    <div style="margin-top:14px">
+      <label>Your character name (exactly as it appears in the script)</label>
+      <input type="text" id="actor-name" placeholder="e.g. Yvonne Munyao" />
+    </div>
+
+    <div style="margin-top:10px">
+      <label>Play title (optional)</label>
+      <input type="text" id="play-title" placeholder="e.g. The Orchards of Kathonzweni" />
+    </div>
+
+    <div style="margin-top:14px">
+      <button class="primary" onclick="parseScript()" style="width:100%" id="parse-btn">Parse script &amp; find my lines</button>
+    </div>
+    <div id="parse-error" class="error"></div>
+  </div>
+
+  <!-- STEP 2: Lines overview -->
+  <div id="step-lines" class="card hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div>
+        <div style="font-size:15px;font-weight:500" id="lines-title">Your lines</div>
+        <div style="font-size:13px;color:#666" id="lines-sub"></div>
+      </div>
+      <button onclick="resetApp()" style="font-size:12px">Start over</button>
+    </div>
+    <div class="line-list" id="line-list"></div>
+    <hr />
+    <label style="margin-bottom:8px">Choose practice mode</label>
+    <div class="row">
+      <button onclick="startMode('drill')" class="primary">Active recall drill</button>
+      <button onclick="startMode('runthrough')" style="border-color:#1A3D6B;color:#1A3D6B">Full scene run-through</button>
+    </div>
+  </div>
+
+  <!-- STEP 3a: Active Recall Drill -->
+  <div id="step-drill" class="card hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <span style="font-size:13px;font-weight:500">Active recall drill</span>
+      <button onclick="showStep('lines')" style="font-size:12px">Back</button>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar" id="drill-progress" style="width:0%"></div>
+    </div>
+    <div class="navigation" style="margin-bottom:0">
+      <span class="nav-info" id="drill-counter">Line 1 of ?</span>
+      <div style="display:flex;gap:8px">
+        <button onclick="prevLine()" id="btn-prev" style="font-size:12px">&#8592; Prev</button>
+        <button onclick="nextLine()" id="btn-next" style="font-size:12px">Next &#8594;</button>
+      </div>
+    </div>
+    <hr />
+    <div class="scene-tag" id="drill-scene"></div>
+    <div class="cue-block">
+      <div class="cue-speaker" id="drill-cue-speaker"></div>
+      <div class="cue-text" id="drill-cue-text"></div>
+    </div>
+    <div style="margin-bottom:8px">
+      <label>Your response — type it from memory:</label>
+      <textarea id="drill-input" placeholder="Type your line here..." style="min-height:100px" oninput="clearFeedback()"></textarea>
+    </div>
+    <div class="row">
+      <button onclick="submitDrillLine()" class="primary" id="drill-submit-btn">Submit for coaching</button>
+      <button onclick="revealLine()" id="btn-reveal">Show correct line</button>
+    </div>
+    <div id="drill-reveal" class="your-line-block hidden" style="margin-top:10px">
+      <div class="your-line-speaker" id="reveal-speaker"></div>
+      <div class="your-line-text" id="reveal-text"></div>
+    </div>
+    <div id="drill-feedback" class="feedback-block hidden"></div>
+  </div>
+
+  <!-- STEP 3b: Scene Run-through -->
+  <div id="step-runthrough" class="card hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <span style="font-size:13px;font-weight:500">Scene run-through</span>
+      <button onclick="showStep('lines')" style="font-size:12px">Back</button>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar" id="run-progress" style="width:0%"></div>
+    </div>
+    <div class="navigation" style="margin-bottom:0">
+      <span class="nav-info" id="run-counter">Line 1 of ?</span>
+    </div>
+    <hr />
+    <div id="scene-context"></div>
+    <div id="run-your-turn" class="hidden">
+      <div style="margin-bottom:4px"><span class="badge badge-blue">Your turn</span></div>
+      <div class="cue-block" style="margin-bottom:10px">
+        <div class="cue-speaker" id="run-cue-speaker"></div>
+        <div class="cue-text" id="run-cue-text"></div>
+      </div>
+      <label>Your line — type from memory:</label>
+      <textarea id="run-input" placeholder="Type your line..." style="min-height:90px" oninput="clearRunFeedback()"></textarea>
+      <div class="row" style="margin-top:8px">
+        <button onclick="submitRunLine()" class="primary" id="run-submit-btn">Deliver line</button>
+        <button onclick="revealRunLine()">Show line</button>
+      </div>
+      <div id="run-reveal-block" class="your-line-block hidden" style="margin-top:10px">
+        <div class="your-line-speaker" id="run-reveal-speaker"></div>
+        <div class="your-line-text" id="run-reveal-text"></div>
+      </div>
+      <div id="run-feedback" class="feedback-block hidden"></div>
+      <div id="run-next-wrap" class="hidden" style="margin-top:10px">
+        <button onclick="advanceRunthrough()" class="success" style="width:100%">Continue scene &#8594;</button>
+      </div>
+    </div>
+    <div id="run-complete" class="hidden" style="text-align:center;padding:2rem 0">
+      <div style="font-size:18px;font-weight:500;margin-bottom:8px">Scene complete!</div>
+      <div style="font-size:14px;color:#666;margin-bottom:16px">Great work running through the scene.</div>
+      <button onclick="showStep('lines')" class="primary">Back to my lines</button>
+    </div>
+  </div>
+
+</div>
+<script>
+  // ── IMPORTANT: Replace this with your actual Vercel URL once deployed ──
+  const API_URL = "/api/claude";
+  const MODEL = "claude-sonnet-4-20250514";
+
+  let scriptText = "", actorName = "", playTitle = "";
+  let myLines = [], currentLineIdx = 0;
+  let allSceneLines = [], runIdx = 0;
+
+  function switchInput(mode) {
+    document.getElementById("input-paste").classList.toggle("hidden", mode !== "paste");
+    document.getElementById("input-pdf").classList.toggle("hidden", mode !== "pdf");
+    document.querySelectorAll(".tab").forEach((t, i) => {
+      t.classList.toggle("active", (mode === "paste" && i === 0) || (mode === "pdf" && i === 1));
+    });
+  }
+
+  async function handlePDF(input) {
+    const file = input.files[0];
+    if (!file) return;
+    document.getElementById("pdf-status").textContent = "Reading PDF...";
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const uint8 = new Uint8Array(arrayBuffer);
+      let binary = "";
+      for (let i = 0; i < uint8.length; i++) binary += String.fromCharCode(uint8[i]);
+      const base64 = btoa(binary);
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: MODEL, max_tokens: 4096,
+          messages: [{
+            role: "user",
+            content: [
+              { type: "document", source: { type: "base64", media_type: "application/pdf", data: base64 } },
+              { type: "text", text: "Extract the full text of this script exactly as written. Return only the raw script text, preserving all speaker names, dialogue, and stage directions. No commentary." }
+            ]
+          }]
+        })
+      });
+      const data = await res.json();
+      const extracted = data.content?.find(b => b.type === "text")?.text || "";
+      if (extracted) {
+        document.getElementById("script-text").value = extracted;
+        switchInput("paste");
+        document.getElementById("pdf-status").textContent = "PDF extracted successfully";
+      } else {
+        document.getElementById("pdf-status").textContent = "Could not extract — try pasting instead";
+      }
+    } catch (e) {
+      document.getElementById("pdf-status").textContent = "Error: " + e.message;
+    }
+  }
+
+  async function parseScript() {
+    const raw = document.getElementById("script-text").value.trim();
+    const name = document.getElementById("actor-name").value.trim();
+    const title = document.getElementById("play-title").value.trim();
+    const errEl = document.getElementById("parse-error");
+    if (!raw) { errEl.textContent = "Please paste a script first."; return; }
+    if (!name) { errEl.textContent = "Please enter your character name."; return; }
+    errEl.textContent = "";
+    scriptText = raw; actorName = name; playTitle = title;
+    const btn = document.getElementById("parse-btn");
+    btn.innerHTML = '<span class="spinner"></span>Parsing...';
+    btn.disabled = true;
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: MODEL, max_tokens: 4096,
+          system: "You are a script analyser. Extract structured data from theatre scripts. Return only valid JSON, no markdown.",
+          messages: [{
+            role: "user",
+            content: `Analyse this script and extract every line spoken by "${name}".
+
+For each of ${name}'s lines return:
+- "act": the act name/number
+- "scene_direction": stage direction immediately before this exchange (max 15 words)
+- "cue_speaker": name of the character who speaks immediately before ${name}
+- "cue_line": full text of that cue line
+- "your_line": full text of ${name}'s line
+- "stage_direction": any inline stage direction for ${name} in this line
+
+Also return "character_summary": a 2-sentence description of ${name}'s character arc and motivations.
+
+Return JSON in this exact format:
+{
+  "character_summary": "...",
+  "lines": [
+    { "act": "...", "scene_direction": "...", "cue_speaker": "...", "cue_line": "...", "your_line": "...", "stage_direction": "..." }
+  ]
+}
+
+Script:
+${scriptText.slice(0, 12000)}`
+          }]
+        })
+      });
+      const data = await res.json();
+      const text = data.content?.find(b => b.type === "text")?.text || "";
+      const clean = text.replace(/```json|```/g, "").trim();
+      const parsed = JSON.parse(clean);
+      myLines = parsed.lines || [];
+      const summary = parsed.character_summary || "";
+      if (myLines.length === 0) {
+        errEl.textContent = `No lines found for "${name}". Check the spelling matches the script exactly.`;
+        btn.innerHTML = "Parse script &amp; find my lines"; btn.disabled = false;
+        return;
+      }
+      renderLinesOverview(summary);
+      showStep("lines");
+    } catch (e) {
+      errEl.textContent = "Parse error: " + e.message;
+    }
+    btn.innerHTML = "Parse script &amp; find my lines"; btn.disabled = false;
+  }
+
+  function renderLinesOverview(summary) {
+    document.getElementById("lines-title").textContent = actorName + (playTitle ? " — " + playTitle : "");
+    document.getElementById("lines-sub").textContent = myLines.length + " lines found" + (summary ? " · " + summary.split(".")[0] + "." : "");
+    const list = document.getElementById("line-list");
+    list.innerHTML = "";
+    myLines.forEach((l, i) => {
+      const div = document.createElement("div");
+      div.className = "line-item";
+      div.innerHTML = `<span class="line-num">${i + 1}</span>
+        <div>
+          <span class="badge badge-blue" style="margin-bottom:4px;display:inline-block">${l.act}</span><br/>
+          <span style="color:#888;font-size:12px">${l.cue_speaker}: </span>
+          <span style="font-size:12px;color:#aaa">${l.cue_line.slice(0, 60)}...</span><br/>
+          <span style="font-size:13px">${l.your_line.slice(0, 80)}${l.your_line.length > 80 ? "..." : ""}</span>
+        </div>`;
+      list.appendChild(div);
+    });
+  }
+
+  function startMode(mode) {
+    currentLineIdx = 0;
+    if (mode === "drill") { showStep("drill"); renderDrillLine(); }
+    else { runIdx = 0; showStep("runthrough"); buildSceneLines(); renderRunthrough(); }
+  }
+
+  function renderDrillLine() {
+    const l = myLines[currentLineIdx];
+    document.getElementById("drill-counter").textContent = `Line ${currentLineIdx + 1} of ${myLines.length}`;
+    document.getElementById("drill-progress").style.width = ((currentLineIdx + 1) / myLines.length * 100) + "%";
+    document.getElementById("drill-scene").textContent = l.act + (l.scene_direction ? " · " + l.scene_direction : "");
+    document.getElementById("drill-cue-speaker").textContent = l.cue_speaker + ":";
+    document.getElementById("drill-cue-text").textContent = l.cue_line;
+    document.getElementById("reveal-speaker").textContent = actorName + ":";
+    document.getElementById("reveal-text").textContent = l.your_line;
+    document.getElementById("drill-input").value = "";
+    document.getElementById("drill-reveal").classList.add("hidden");
+    document.getElementById("drill-feedback").classList.add("hidden");
+    document.getElementById("btn-prev").disabled = currentLineIdx === 0;
+    document.getElementById("btn-next").disabled = currentLineIdx === myLines.length - 1;
+  }
+
+  function prevLine() { if (currentLineIdx > 0) { currentLineIdx--; renderDrillLine(); } }
+  function nextLine() { if (currentLineIdx < myLines.length - 1) { currentLineIdx++; renderDrillLine(); } }
+  function revealLine() { document.getElementById("drill-reveal").classList.remove("hidden"); }
+  function clearFeedback() { document.getElementById("drill-feedback").classList.add("hidden"); }
+  function clearRunFeedback() { document.getElementById("run-feedback").classList.add("hidden"); }
+
+  async function submitDrillLine() {
+    const attempt = document.getElementById("drill-input").value.trim();
+    if (!attempt) return;
+    const l = myLines[currentLineIdx];
+    const fb = document.getElementById("drill-feedback");
+    const btn = document.getElementById("drill-submit-btn");
+    fb.innerHTML = '<span class="spinner"></span>Getting coaching...';
+    fb.className = "feedback-block loading";
+    fb.classList.remove("hidden");
+    btn.disabled = true;
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: MODEL, max_tokens: 600,
+          system: "You are an experienced theatre director giving warm, specific, actionable coaching to an actor. Be encouraging but honest. Keep feedback to 3-4 sentences max. Focus on: accuracy, pacing, emotional tone, and character motivation.",
+          messages: [{
+            role: "user",
+            content: `Character: ${actorName}
+Play: ${playTitle || "unknown"}
+Act: ${l.act}
+
+Cue received: "${l.cue_line}"
+Correct line: "${l.your_line}"
+${l.stage_direction ? "Stage direction: " + l.stage_direction : ""}
+
+Actor typed: "${attempt}"
+
+Give delivery coaching. Note accuracy first, then give specific advice on pacing, emotional emphasis, and how the character would say this. End with one encouragement.`
+          }]
+        })
+      });
+      const data = await res.json();
+      const text = data.content?.find(b => b.type === "text")?.text || "No feedback received.";
+      fb.innerHTML = text.replace(/\n/g, "<br/>");
+      fb.className = "feedback-block";
+      document.getElementById("drill-reveal").classList.remove("hidden");
+    } catch (e) {
+      fb.innerHTML = "Error: " + e.message;
+      fb.className = "feedback-block";
+    }
+    btn.disabled = false;
+  }
+
+  function buildSceneLines() {
+    allSceneLines = [];
+    myLines.forEach((myLine, myIdx) => {
+      allSceneLines.push({ type: "cue", speaker: myLine.cue_speaker, text: myLine.cue_line, myLineIdx: myIdx });
+      allSceneLines.push({ type: "mine", myLineIdx: myIdx });
+    });
+  }
+
+  function renderRunthrough() {
+    if (runIdx >= allSceneLines.length) {
+      document.getElementById("run-your-turn").classList.add("hidden");
+      document.getElementById("run-complete").classList.remove("hidden");
+      return;
+    }
+    const item = allSceneLines[runIdx];
+    const doneLines = Math.floor(runIdx / 2);
+    document.getElementById("run-counter").textContent = `Line ${doneLines + 1} of ${myLines.length}`;
+    document.getElementById("run-progress").style.width = (doneLines / myLines.length * 100) + "%";
+    const ctx = document.getElementById("scene-context");
+    if (item.type === "cue") {
+      ctx.innerHTML = "";
+      const l = myLines[item.myLineIdx];
+      if (l.act || l.scene_direction) {
+        ctx.innerHTML = `<div class="scene-tag">${l.act}${l.scene_direction ? " · " + l.scene_direction : ""}</div>`;
+      }
+      const div = document.createElement("div");
+      div.className = "other-line";
+      div.innerHTML = `<div class="other-speaker">${item.speaker}</div><div>${item.text}</div>`;
+      ctx.appendChild(div);
+      document.getElementById("run-your-turn").classList.add("hidden");
+      setTimeout(() => { runIdx++; renderRunthrough(); }, 1400);
+    } else {
+      const l = myLines[item.myLineIdx];
+      document.getElementById("run-cue-speaker").textContent = l.cue_speaker + ":";
+      document.getElementById("run-cue-text").textContent = l.cue_line;
+      document.getElementById("run-reveal-speaker").textContent = actorName + ":";
+      document.getElementById("run-reveal-text").textContent = l.your_line;
+      document.getElementById("run-input").value = "";
+      document.getElementById("run-reveal-block").classList.add("hidden");
+      document.getElementById("run-feedback").classList.add("hidden");
+      document.getElementById("run-next-wrap").classList.add("hidden");
+      document.getElementById("run-your-turn").classList.remove("hidden");
+    }
+  }
+
+  function revealRunLine() {
+    document.getElementById("run-reveal-block").classList.remove("hidden");
+    document.getElementById("run-next-wrap").classList.remove("hidden");
+  }
+
+  async function submitRunLine() {
+    const attempt = document.getElementById("run-input").value.trim();
+    if (!attempt) return;
+    const item = allSceneLines[runIdx];
+    const l = myLines[item.myLineIdx];
+    const fb = document.getElementById("run-feedback");
+    const btn = document.getElementById("run-submit-btn");
+    fb.innerHTML = '<span class="spinner"></span>Director\'s note...';
+    fb.className = "feedback-block loading";
+    fb.classList.remove("hidden");
+    document.getElementById("run-reveal-block").classList.remove("hidden");
+    document.getElementById("run-next-wrap").classList.remove("hidden");
+    btn.disabled = true;
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: MODEL, max_tokens: 400,
+          system: "You are a theatre director giving brief, warm in-rehearsal notes. Keep it to 2-3 sentences. Be specific and encouraging.",
+          messages: [{
+            role: "user",
+            content: `Character: ${actorName} | Act: ${l.act}
+Cue: "${l.cue_line}"
+Correct line: "${l.your_line}"
+${l.stage_direction ? "Stage direction: " + l.stage_direction : ""}
+Actor delivered: "${attempt}"
+Give a quick director's note on accuracy, emotion, and delivery.`
+          }]
+        })
+      });
+      const data = await res.json();
+      const text = data.content?.find(b => b.type === "text")?.text || "";
+      fb.innerHTML = text.replace(/\n/g, "<br/>");
+      fb.className = "feedback-block";
+    } catch (e) {
+      fb.innerHTML = "Could not get feedback.";
+      fb.className = "feedback-block";
+    }
+    btn.disabled = false;
+  }
+
+  function advanceRunthrough() { runIdx++; document.getElementById("run-your-turn").classList.add("hidden"); renderRunthrough(); }
+
+  function showStep(step) {
+    ["setup", "lines", "drill", "runthrough"].forEach(s => {
+      document.getElementById("step-" + s).classList.toggle("hidden", s !== step);
+    });
+  }
+
+  function resetApp() {
+    scriptText = ""; actorName = ""; myLines = []; currentLineIdx = 0;
+    document.getElementById("script-text").value = "";
+    document.getElementById("actor-name").value = "";
+    document.getElementById("play-title").value = "";
+    showStep("setup");
+  }
+</script>
+</body>
+</html>
