@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Line Coach</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎭</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -384,9 +385,21 @@
   .mode-card-title { font-size: 14px; font-weight: 500; color: var(--ink); margin-bottom: 4px; }
   .mode-card-desc { font-size: 12px; color: var(--ink3); line-height: 1.5; }
 
+  select:focus {
+    border-color: var(--stage);
+    box-shadow: 0 0 0 3px rgba(26,61,107,0.08);
+    background: #fff;
+  }
+
   @media (max-width: 500px) {
     .landing-title { font-size: 42px; }
     .landing-features { gap: 1.25rem; }
+    .app { padding: 1rem 0.75rem 4rem; }
+    .card { padding: 1rem; }
+    .row { flex-direction: column; }
+    .row button { min-width: unset; }
+    .mode-card { min-width: unset; }
+    .app-header { margin-bottom: 1.25rem; }
   }
 </style>
 </head>
@@ -436,7 +449,7 @@
     </div>
   </div>
 
-  <!-- STEP 1: Setup -->
+  <!-- STEP 1a: Load script -->
   <div id="step-setup" class="card">
     <div class="card-title">Load your script</div>
 
@@ -459,16 +472,27 @@
     </div>
 
     <div style="margin-top:14px">
-      <label>Your character name</label>
-      <input type="text" id="actor-name" placeholder="Exactly as it appears in the script, e.g. Yvonne Munyao" />
-    </div>
-
-    <div style="margin-top:10px">
       <label>Play title <span style="text-transform:none;font-weight:300;color:var(--ink3)">(optional)</span></label>
       <input type="text" id="play-title" placeholder="e.g. The Orchards of Kathonzweni" />
     </div>
 
     <div style="margin-top:14px">
+      <button class="btn-stage" onclick="scanCharacters()" style="width:100%" id="scan-btn">Scan for characters</button>
+    </div>
+    <div id="scan-error" class="error"></div>
+  </div>
+
+  <!-- STEP 1b: Pick character -->
+  <div id="step-pick" class="card hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="card-title" style="margin-bottom:0">Who are you playing?</div>
+      <button onclick="showStep('setup')" style="font-size:12px;padding:6px 12px">Back</button>
+    </div>
+    <label>Select your character</label>
+    <select id="character-select" style="margin-bottom:14px" onchange="onCharacterSelect()">
+      <option value="">Choose a character...</option>
+    </select>
+    <div id="character-confirm" class="hidden">
       <button class="btn-stage" onclick="parseScript()" style="width:100%" id="parse-btn">Find my lines</button>
     </div>
     <div id="parse-error" class="error"></div>
@@ -633,11 +657,14 @@ function enterApp(resume) {
       playTitle = saved.playTitle;
       myLines = saved.myLines;
       document.getElementById("script-text").value = scriptText;
-      document.getElementById("actor-name").value = actorName;
-      document.getElementById("play-title").value = playTitle;
-      renderLinesOverview(null);
-      showStep("lines");
+      document.getElementById("play-title").value = playTitle || "";
       document.getElementById("saved-pill").classList.add("visible");
+      if (myLines && myLines.length > 0) {
+        renderLinesOverview(null);
+        showStep("lines");
+      } else {
+        showStep("setup");
+      }
       return;
     }
   }
@@ -696,15 +723,71 @@ async function handlePDF(input) {
   }
 }
 
-async function parseScript() {
+// ── SCAN CHARACTERS ──────────────────────────────────────
+async function scanCharacters() {
   const raw = document.getElementById("script-text").value.trim();
-  const name = document.getElementById("actor-name").value.trim();
   const title = document.getElementById("play-title").value.trim();
-  const errEl = document.getElementById("parse-error");
-  if (!raw) { errEl.textContent = "Please paste a script first."; return; }
-  if (!name) { errEl.textContent = "Please enter your character name."; return; }
+  const errEl = document.getElementById("scan-error");
+  if (!raw) { errEl.textContent = "Please paste or upload a script first."; return; }
   errEl.textContent = "";
-  scriptText = raw; actorName = name; playTitle = title;
+  scriptText = raw; playTitle = title;
+  const btn = document.getElementById("scan-btn");
+  btn.innerHTML = '<span class="spinner"></span>Scanning characters...';
+  btn.disabled = true;
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: MODEL, max_tokens: 512,
+        system: "You are a script analyser. Return only valid JSON, no markdown.",
+        messages: [{
+          role: "user",
+          content: `List every speaking character in this script. Return JSON only:
+{ "characters": ["Character One", "Character Two", ...] }
+
+Script:
+${scriptText.slice(0, 8000)}`
+        }]
+      })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || `Server error ${res.status}. Please try again.`);
+    }
+    const data = await res.json();
+    const text = data.content?.find(b => b.type === "text")?.text || "";
+    const clean = text.replace(/```json|```/g, "").trim();
+    const parsed = JSON.parse(clean);
+    const characters = parsed.characters || [];
+    if (characters.length === 0) throw new Error("No characters found. Check the script was pasted correctly.");
+    const sel = document.getElementById("character-select");
+    sel.innerHTML = '<option value="">Choose a character...</option>';
+    characters.forEach(c => {
+      const opt = document.createElement("option");
+      opt.value = c; opt.textContent = c;
+      sel.appendChild(opt);
+    });
+    showStep("pick");
+  } catch (e) {
+    errEl.textContent = e.message;
+  }
+  btn.innerHTML = "Scan for characters"; btn.disabled = false;
+}
+
+function onCharacterSelect() {
+  const val = document.getElementById("character-select").value;
+  document.getElementById("character-confirm").classList.toggle("hidden", !val);
+  document.getElementById("parse-error").textContent = "";
+}
+
+// ── PARSE LINES ───────────────────────────────────────────
+async function parseScript() {
+  const name = document.getElementById("character-select").value;
+  const errEl = document.getElementById("parse-error");
+  if (!name) { errEl.textContent = "Please select a character first."; return; }
+  errEl.textContent = "";
+  actorName = name;
   const btn = document.getElementById("parse-btn");
   btn.innerHTML = '<span class="spinner"></span>Finding your lines...';
   btn.disabled = true;
@@ -742,6 +825,10 @@ ${scriptText.slice(0, 12000)}`
         }]
       })
     });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || `Server error ${res.status}. Please try again.`);
+    }
     const data = await res.json();
     const text = data.content?.find(b => b.type === "text")?.text || "";
     const clean = text.replace(/```json|```/g, "").trim();
@@ -749,7 +836,7 @@ ${scriptText.slice(0, 12000)}`
     myLines = parsed.lines || [];
     const summary = parsed.character_summary || "";
     if (myLines.length === 0) {
-      errEl.textContent = `No lines found for "${name}". Check the spelling matches the script exactly.`;
+      errEl.textContent = `No lines found for "${name}". Try selecting a different character.`;
       btn.innerHTML = "Find my lines"; btn.disabled = false;
       return;
     }
@@ -757,7 +844,7 @@ ${scriptText.slice(0, 12000)}`
     renderLinesOverview(summary);
     showStep("lines");
   } catch (e) {
-    errEl.textContent = "Parse error: " + e.message;
+    errEl.textContent = e.message.includes("fetch") ? "Connection error. Check your internet and try again." : e.message;
   }
   btn.innerHTML = "Find my lines"; btn.disabled = false;
 }
@@ -954,17 +1041,18 @@ function advanceRunthrough() {
 }
 
 function showStep(step) {
-  ["setup", "lines", "drill", "runthrough"].forEach(s => {
+  ["setup", "pick", "lines", "drill", "runthrough"].forEach(s => {
     document.getElementById("step-" + s).classList.toggle("hidden", s !== step);
   });
 }
 
 function resetApp() {
   if (!confirm("This will clear your saved progress. Are you sure?")) return;
-  scriptText = ""; actorName = ""; myLines = []; currentLineIdx = 0;
+  scriptText = ""; actorName = ""; playTitle = ""; myLines = []; currentLineIdx = 0;
   document.getElementById("script-text").value = "";
-  document.getElementById("actor-name").value = "";
   document.getElementById("play-title").value = "";
+  document.getElementById("character-select").innerHTML = '<option value="">Choose a character...</option>';
+  document.getElementById("character-confirm").classList.add("hidden");
   clearProgress();
   showStep("setup");
 }
