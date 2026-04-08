@@ -4,104 +4,441 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Line Coach</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: system-ui, sans-serif; background: #f5f5f0; color: #111; min-height: 100vh; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  .app { max-width: 760px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+  :root {
+    --ink: #1a1a18;
+    --ink2: #4a4a46;
+    --ink3: #8a8a84;
+    --paper: #faf9f6;
+    --paper2: #f2f0eb;
+    --paper3: #e8e4dc;
+    --stage: #1A3D6B;
+    --stage-light: #e8f0f9;
+    --gold: #c4973a;
+    --gold-light: #fdf3e0;
+    --green: #0F6E56;
+    --red: #a32d2d;
+    --radius: 10px;
+    --radius-lg: 16px;
+  }
 
-  .header { text-align: center; margin-bottom: 2rem; }
-  .header h1 { font-size: 22px; font-weight: 500; margin-bottom: 4px; }
-  .header p { font-size: 14px; color: #666; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
 
-  .card { background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+  /* ── LANDING ─────────────────────────────────── */
+  #screen-landing {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    background: var(--paper);
+    position: relative;
+    overflow: hidden;
+  }
 
-  label { font-size: 13px; color: #666; display: block; margin-bottom: 6px; }
+  #screen-landing::before {
+    content: '';
+    position: absolute;
+    top: -120px; left: 50%;
+    transform: translateX(-50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(ellipse, rgba(196,151,58,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .landing-eyebrow {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1.25rem;
+  }
+
+  .landing-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(48px, 8vw, 80px);
+    font-weight: 400;
+    line-height: 1.05;
+    color: var(--ink);
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+  }
+
+  .landing-title em {
+    font-style: italic;
+    color: var(--stage);
+  }
+
+  .landing-sub {
+    font-size: 16px;
+    color: var(--ink2);
+    max-width: 380px;
+    margin: 1.25rem auto 2.5rem;
+    font-weight: 300;
+    line-height: 1.7;
+  }
+
+  .landing-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    width: 100%;
+    max-width: 280px;
+  }
+
+  .btn-primary {
+    width: 100%;
+    padding: 14px 28px;
+    background: var(--stage);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    letter-spacing: 0.01em;
+  }
+  .btn-primary:hover { background: #14305a; }
+  .btn-primary:active { transform: scale(0.98); }
+
+  .btn-secondary {
+    width: 100%;
+    padding: 13px 28px;
+    background: transparent;
+    color: var(--stage);
+    border: 1px solid var(--paper3);
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .btn-secondary:hover { border-color: var(--stage); background: var(--stage-light); }
+
+  .landing-features {
+    display: flex;
+    gap: 2rem;
+    margin-top: 3.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .feat {
+    text-align: center;
+    max-width: 130px;
+  }
+  .feat-icon {
+    width: 40px; height: 40px;
+    background: var(--paper2);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 8px;
+    font-size: 18px;
+  }
+  .feat-label {
+    font-size: 12px;
+    color: var(--ink3);
+    font-weight: 400;
+    line-height: 1.4;
+  }
+
+  .landing-divider {
+    width: 40px; height: 1px;
+    background: var(--paper3);
+    margin: 3rem auto 0;
+  }
+
+  /* ── APP SHELL ───────────────────────────────── */
+  #screen-app { display: none; }
+  #screen-app.active { display: block; }
+
+  .app {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 5rem;
+  }
+
+  .app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.75rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--paper3);
+  }
+
+  .app-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .app-logo em { font-style: italic; color: var(--stage); }
+
+  .app-header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .saved-pill {
+    font-size: 11px;
+    background: var(--gold-light);
+    color: #8a6520;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-weight: 500;
+    display: none;
+  }
+  .saved-pill.visible { display: inline-block; }
+
+  /* ── CARDS ───────────────────────────────────── */
+  .card {
+    background: #fff;
+    border: 1px solid var(--paper3);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 1rem;
+    letter-spacing: -0.01em;
+  }
+
+  /* ── FORM ELEMENTS ───────────────────────────── */
+  label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink2);
+    display: block;
+    margin-bottom: 5px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
   input[type=text], textarea, select {
-    width: 100%; padding: 8px 12px;
-    border: 0.5px solid rgba(0,0,0,0.2);
-    border-radius: 8px; font-size: 14px;
-    background: #fff; color: #111;
-    outline: none; font-family: inherit;
+    width: 100%;
+    padding: 9px 13px;
+    border: 1px solid var(--paper3);
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
   }
   textarea { resize: vertical; min-height: 160px; line-height: 1.6; }
-  input[type=text]:focus, textarea:focus { border-color: #378add; box-shadow: 0 0 0 2px rgba(55,138,221,0.15); }
+  input[type=text]:focus, textarea:focus {
+    border-color: var(--stage);
+    box-shadow: 0 0 0 3px rgba(26,61,107,0.08);
+    background: #fff;
+  }
 
   button {
-    padding: 8px 18px;
-    border: 0.5px solid rgba(0,0,0,0.2);
-    border-radius: 8px; background: transparent;
-    color: #111; font-size: 14px; cursor: pointer;
-    font-family: inherit; transition: background 0.15s;
+    padding: 9px 18px;
+    border: 1px solid var(--paper3);
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--ink);
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s;
+    font-weight: 400;
   }
-  button:hover { background: #f0f0ec; }
+  button:hover { background: var(--paper2); border-color: var(--paper3); }
   button:active { transform: scale(0.98); }
-  button.primary { background: #1A3D6B; color: #fff; border-color: #1A3D6B; }
-  button.primary:hover { background: #14305a; }
-  button.success { background: #0F6E56; color: #fff; border-color: #0F6E56; }
-  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  button:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+  .btn-stage { background: var(--stage); color: #fff; border-color: var(--stage); font-weight: 500; }
+  .btn-stage:hover { background: #14305a; border-color: #14305a; }
+  .btn-green { background: var(--green); color: #fff; border-color: var(--green); font-weight: 500; }
+  .btn-green:hover { background: #0a5a46; }
 
   .row { display: flex; gap: 10px; flex-wrap: wrap; }
-  .row button { flex: 1; min-width: 120px; }
+  .row button { flex: 1; min-width: 130px; }
 
-  .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 6px; font-weight: 500; }
-  .badge-blue { background: #E6F1FB; color: #185FA5; }
+  /* ── TABS ────────────────────────────────────── */
+  .tab-row { display: flex; gap: 6px; margin-bottom: 1rem; background: var(--paper2); border-radius: var(--radius); padding: 4px; }
+  .tab {
+    flex: 1; padding: 7px 12px; border-radius: 7px; border: none;
+    font-size: 13px; cursor: pointer; background: transparent;
+    color: var(--ink2); font-weight: 400; transition: background 0.12s, color 0.12s;
+  }
+  .tab.active { background: #fff; color: var(--stage); font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
 
-  .cue-block { background: #f8f8f4; border-left: 3px solid #B4B2A9; border-radius: 0 8px 8px 0; padding: 10px 14px; margin-bottom: 10px; }
-  .cue-speaker { font-size: 12px; font-weight: 500; color: #666; margin-bottom: 4px; }
-  .cue-text { font-size: 14px; line-height: 1.6; color: #555; font-style: italic; }
+  /* ── BADGES ──────────────────────────────────── */
+  .badge {
+    display: inline-block; font-size: 11px; padding: 2px 9px;
+    border-radius: 99px; font-weight: 500; letter-spacing: 0.02em;
+  }
+  .badge-blue { background: var(--stage-light); color: var(--stage); }
+  .badge-gold { background: var(--gold-light); color: #8a6520; }
 
-  .your-line-block { border-left: 3px solid #1A3D6B; background: #E6F1FB; border-radius: 0 8px 8px 0; padding: 10px 14px; margin-bottom: 14px; }
-  .your-line-speaker { font-size: 12px; font-weight: 500; color: #185FA5; margin-bottom: 4px; }
-  .your-line-text { font-size: 14px; line-height: 1.6; color: #0C447C; }
+  /* ── CUE & LINE BLOCKS ───────────────────────── */
+  .cue-block {
+    background: var(--paper2);
+    border-left: 3px solid var(--paper3);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 10px 14px; margin-bottom: 10px;
+  }
+  .cue-speaker { font-size: 11px; font-weight: 500; color: var(--ink3); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .cue-text { font-size: 14px; line-height: 1.65; color: var(--ink2); font-style: italic; }
 
-  .feedback-block { border: 0.5px solid rgba(0,0,0,0.12); border-radius: 8px; padding: 12px 14px; margin-top: 10px; font-size: 14px; line-height: 1.7; }
-  .feedback-block.loading { color: #666; font-style: italic; }
+  .your-line-block {
+    border-left: 3px solid var(--stage);
+    background: var(--stage-light);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 10px 14px; margin-bottom: 10px;
+  }
+  .your-line-speaker { font-size: 11px; font-weight: 500; color: var(--stage); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .your-line-text { font-size: 14px; line-height: 1.65; color: #0C447C; }
 
-  .progress-bar-wrap { background: #eee; border-radius: 99px; height: 6px; margin-bottom: 4px; }
-  .progress-bar { height: 6px; border-radius: 99px; background: #1A3D6B; transition: width 0.4s ease; }
+  .feedback-block {
+    border: 1px solid var(--paper3);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-top: 10px;
+    font-size: 14px;
+    line-height: 1.7;
+    background: #fff;
+  }
+  .feedback-block.loading { color: var(--ink3); font-style: italic; }
 
-  .tab-row { display: flex; gap: 8px; margin-bottom: 1rem; }
-  .tab { padding: 6px 16px; border-radius: 8px; border: 0.5px solid rgba(0,0,0,0.15); font-size: 13px; cursor: pointer; background: transparent; color: #666; }
-  .tab.active { background: #1A3D6B; color: #fff; border-color: #1A3D6B; }
+  /* ── PROGRESS ────────────────────────────────── */
+  .progress-wrap { background: var(--paper2); border-radius: 99px; height: 4px; margin-bottom: 6px; }
+  .progress-bar { height: 4px; border-radius: 99px; background: var(--stage); transition: width 0.4s ease; }
 
-  .hint { font-size: 12px; color: #999; margin-top: 4px; }
+  /* ── MISC ────────────────────────────────────── */
+  .hint { font-size: 12px; color: var(--ink3); margin-top: 4px; }
+  .error { font-size: 12px; color: var(--red); margin-top: 6px; }
+  .scene-tag { font-size: 11px; color: var(--ink3); font-style: italic; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .hidden { display: none !important; }
+  hr { border: none; border-top: 1px solid var(--paper3); margin: 1rem 0; }
 
-  .scene-tag { font-size: 11px; color: #aaa; font-style: italic; margin-bottom: 8px; }
+  .navigation {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-top: 8px;
+  }
+  .nav-info { font-size: 12px; color: var(--ink3); }
 
-  .upload-zone { border: 1.5px dashed rgba(0,0,0,0.2); border-radius: 10px; padding: 2rem; text-align: center; cursor: pointer; transition: border-color 0.2s; }
-  .upload-zone:hover { border-color: #378add; }
+  .upload-zone {
+    border: 1.5px dashed var(--paper3); border-radius: var(--radius);
+    padding: 1.75rem; text-align: center; cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .upload-zone:hover { border-color: var(--stage); background: var(--stage-light); }
   .upload-zone input { display: none; }
 
-  .line-list { max-height: 260px; overflow-y: auto; }
-  .line-item { display: flex; gap: 8px; align-items: flex-start; padding: 8px 0; border-bottom: 0.5px solid rgba(0,0,0,0.08); font-size: 13px; }
-  .line-num { color: #aaa; min-width: 24px; font-size: 11px; padding-top: 2px; }
+  .line-list { max-height: 250px; overflow-y: auto; }
+  .line-item {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 9px 0; border-bottom: 1px solid var(--paper2);
+    font-size: 13px;
+  }
+  .line-num { color: var(--ink3); min-width: 22px; font-size: 11px; padding-top: 2px; font-variant-numeric: tabular-nums; }
 
-  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(0,0,0,0.1); border-top-color: #1A3D6B; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
+  .spinner {
+    display: inline-block; width: 13px; height: 13px;
+    border: 2px solid var(--paper3); border-top-color: var(--stage);
+    border-radius: 50%; animation: spin 0.7s linear infinite;
+    vertical-align: middle; margin-right: 6px;
+  }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  .hidden { display: none !important; }
-  hr { border: none; border-top: 0.5px solid rgba(0,0,0,0.1); margin: 1rem 0; }
+  .other-line { background: var(--paper2); border-radius: var(--radius); padding: 9px 13px; margin-bottom: 8px; font-size: 14px; }
+  .other-speaker { font-size: 11px; font-weight: 500; color: var(--ink3); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.06em; }
 
-  .other-line { background: #f5f5f0; border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; font-size: 14px; }
-  .other-speaker { font-size: 11px; font-weight: 500; color: #888; margin-bottom: 2px; }
+  .mode-card {
+    border: 1px solid var(--paper3); border-radius: var(--radius-lg);
+    padding: 1.1rem 1.25rem; cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    flex: 1; min-width: 200px;
+  }
+  .mode-card:hover { border-color: var(--stage); background: var(--stage-light); }
+  .mode-card-title { font-size: 14px; font-weight: 500; color: var(--ink); margin-bottom: 4px; }
+  .mode-card-desc { font-size: 12px; color: var(--ink3); line-height: 1.5; }
 
-  .navigation { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
-  .nav-info { font-size: 13px; color: #888; }
-
-  .error { font-size: 12px; color: #A32D2D; margin-top: 6px; }
+  @media (max-width: 500px) {
+    .landing-title { font-size: 42px; }
+    .landing-features { gap: 1.25rem; }
+  }
 </style>
 </head>
 <body>
+
+<!-- ── LANDING SCREEN ─────────────────────────────────── -->
+<div id="screen-landing">
+  <p class="landing-eyebrow">For actors, by a frustrated actor</p>
+  <h1 class="landing-title">Line<br><em>Coach</em></h1>
+  <p class="landing-sub">Upload your script. Find your lines. Memorise them with AI coaching that actually understands your character.</p>
+
+  <div class="landing-actions">
+    <button class="btn-primary" onclick="enterApp(false)">Get started</button>
+    <button class="btn-secondary" id="btn-resume" onclick="enterApp(true)" style="display:none">Resume where I left off</button>
+  </div>
+
+  <div class="landing-features">
+    <div class="feat">
+      <div class="feat-icon">📄</div>
+      <div class="feat-label">PDF or paste your script</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">🎯</div>
+      <div class="feat-label">Active recall drilling</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">🎭</div>
+      <div class="feat-label">Full scene run-through</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">🎬</div>
+      <div class="feat-label">Director's coaching</div>
+    </div>
+  </div>
+  <div class="landing-divider"></div>
+</div>
+
+<!-- ── APP SCREEN ─────────────────────────────────────── -->
+<div id="screen-app">
 <div class="app">
-  <div class="header">
-    <h1>Line Coach</h1>
-    <p>AI-powered script memorisation &amp; delivery coaching</p>
+
+  <div class="app-header">
+    <div class="app-logo">Line <em>Coach</em></div>
+    <div class="app-header-actions">
+      <span class="saved-pill" id="saved-pill">Progress saved</span>
+      <button onclick="goHome()" style="font-size:12px;padding:6px 12px">Home</button>
+    </div>
   </div>
 
   <!-- STEP 1: Setup -->
   <div id="step-setup" class="card">
-    <label style="font-size:15px;font-weight:500;color:#111;margin-bottom:12px">Step 1 — Load your script</label>
+    <div class="card-title">Load your script</div>
 
     <div class="tab-row">
       <button class="tab active" onclick="switchInput('paste')">Paste text</button>
@@ -115,24 +452,24 @@
     <div id="input-pdf" class="hidden">
       <div class="upload-zone" onclick="document.getElementById('pdf-file').click()">
         <input type="file" id="pdf-file" accept="application/pdf" onchange="handlePDF(this)" />
-        <div style="font-size:28px;margin-bottom:8px">📄</div>
-        <div style="font-size:14px;color:#666">Click to choose a PDF script</div>
+        <div style="font-size:26px;margin-bottom:8px">📄</div>
+        <div style="font-size:14px;color:var(--ink2)">Click to choose a PDF script</div>
         <div class="hint" id="pdf-status" style="margin-top:6px">PDF text will be extracted automatically</div>
       </div>
     </div>
 
     <div style="margin-top:14px">
-      <label>Your character name (exactly as it appears in the script)</label>
-      <input type="text" id="actor-name" placeholder="e.g. Yvonne Munyao" />
+      <label>Your character name</label>
+      <input type="text" id="actor-name" placeholder="Exactly as it appears in the script, e.g. Yvonne Munyao" />
     </div>
 
     <div style="margin-top:10px">
-      <label>Play title (optional)</label>
+      <label>Play title <span style="text-transform:none;font-weight:300;color:var(--ink3)">(optional)</span></label>
       <input type="text" id="play-title" placeholder="e.g. The Orchards of Kathonzweni" />
     </div>
 
     <div style="margin-top:14px">
-      <button class="primary" onclick="parseScript()" style="width:100%" id="parse-btn">Parse script &amp; find my lines</button>
+      <button class="btn-stage" onclick="parseScript()" style="width:100%" id="parse-btn">Find my lines</button>
     </div>
     <div id="parse-error" class="error"></div>
   </div>
@@ -141,34 +478,40 @@
   <div id="step-lines" class="card hidden">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <div>
-        <div style="font-size:15px;font-weight:500" id="lines-title">Your lines</div>
-        <div style="font-size:13px;color:#666" id="lines-sub"></div>
+        <div class="card-title" style="margin-bottom:2px" id="lines-title">Your lines</div>
+        <div style="font-size:13px;color:var(--ink3)" id="lines-sub"></div>
       </div>
-      <button onclick="resetApp()" style="font-size:12px">Start over</button>
+      <button onclick="resetApp()" style="font-size:12px;padding:6px 12px;color:var(--red);border-color:var(--paper3)">Clear &amp; restart</button>
     </div>
     <div class="line-list" id="line-list"></div>
     <hr />
-    <label style="margin-bottom:8px">Choose practice mode</label>
+    <label style="margin-bottom:10px">Choose your practice mode</label>
     <div class="row">
-      <button onclick="startMode('drill')" class="primary">Active recall drill</button>
-      <button onclick="startMode('runthrough')" style="border-color:#1A3D6B;color:#1A3D6B">Full scene run-through</button>
+      <div class="mode-card" onclick="startMode('drill')">
+        <div class="mode-card-title">Active recall drill</div>
+        <div class="mode-card-desc">Cue by cue. Type from memory. Get coaching feedback.</div>
+      </div>
+      <div class="mode-card" onclick="startMode('runthrough')">
+        <div class="mode-card-title">Scene run-through</div>
+        <div class="mode-card-desc">AI plays every other character. You show up as yourself.</div>
+      </div>
     </div>
   </div>
 
   <!-- STEP 3a: Active Recall Drill -->
   <div id="step-drill" class="card hidden">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-      <span style="font-size:13px;font-weight:500">Active recall drill</span>
-      <button onclick="showStep('lines')" style="font-size:12px">Back</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <span style="font-size:13px;font-weight:500;color:var(--ink)">Active recall drill</span>
+      <button onclick="showStep('lines')" style="font-size:12px;padding:6px 12px">Back</button>
     </div>
-    <div class="progress-bar-wrap">
+    <div class="progress-wrap">
       <div class="progress-bar" id="drill-progress" style="width:0%"></div>
     </div>
     <div class="navigation" style="margin-bottom:0">
       <span class="nav-info" id="drill-counter">Line 1 of ?</span>
-      <div style="display:flex;gap:8px">
-        <button onclick="prevLine()" id="btn-prev" style="font-size:12px">&#8592; Prev</button>
-        <button onclick="nextLine()" id="btn-next" style="font-size:12px">Next &#8594;</button>
+      <div style="display:flex;gap:6px">
+        <button onclick="prevLine()" id="btn-prev" style="font-size:12px;padding:6px 12px">&#8592;</button>
+        <button onclick="nextLine()" id="btn-next" style="font-size:12px;padding:6px 12px">&#8594;</button>
       </div>
     </div>
     <hr />
@@ -177,12 +520,12 @@
       <div class="cue-speaker" id="drill-cue-speaker"></div>
       <div class="cue-text" id="drill-cue-text"></div>
     </div>
-    <div style="margin-bottom:8px">
-      <label>Your response — type it from memory:</label>
-      <textarea id="drill-input" placeholder="Type your line here..." style="min-height:100px" oninput="clearFeedback()"></textarea>
+    <div style="margin-bottom:10px">
+      <label>Your line from memory</label>
+      <textarea id="drill-input" placeholder="Type your line here..." style="min-height:90px" oninput="clearFeedback()"></textarea>
     </div>
     <div class="row">
-      <button onclick="submitDrillLine()" class="primary" id="drill-submit-btn">Submit for coaching</button>
+      <button onclick="submitDrillLine()" class="btn-stage" id="drill-submit-btn">Get coaching</button>
       <button onclick="revealLine()" id="btn-reveal">Show correct line</button>
     </div>
     <div id="drill-reveal" class="your-line-block hidden" style="margin-top:10px">
@@ -194,11 +537,11 @@
 
   <!-- STEP 3b: Scene Run-through -->
   <div id="step-runthrough" class="card hidden">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-      <span style="font-size:13px;font-weight:500">Scene run-through</span>
-      <button onclick="showStep('lines')" style="font-size:12px">Back</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <span style="font-size:13px;font-weight:500;color:var(--ink)">Scene run-through</span>
+      <button onclick="showStep('lines')" style="font-size:12px;padding:6px 12px">Back</button>
     </div>
-    <div class="progress-bar-wrap">
+    <div class="progress-wrap">
       <div class="progress-bar" id="run-progress" style="width:0%"></div>
     </div>
     <div class="navigation" style="margin-bottom:0">
@@ -207,15 +550,15 @@
     <hr />
     <div id="scene-context"></div>
     <div id="run-your-turn" class="hidden">
-      <div style="margin-bottom:4px"><span class="badge badge-blue">Your turn</span></div>
+      <div style="margin-bottom:6px"><span class="badge badge-gold">Your turn</span></div>
       <div class="cue-block" style="margin-bottom:10px">
         <div class="cue-speaker" id="run-cue-speaker"></div>
         <div class="cue-text" id="run-cue-text"></div>
       </div>
-      <label>Your line — type from memory:</label>
+      <label>Your line from memory</label>
       <textarea id="run-input" placeholder="Type your line..." style="min-height:90px" oninput="clearRunFeedback()"></textarea>
-      <div class="row" style="margin-top:8px">
-        <button onclick="submitRunLine()" class="primary" id="run-submit-btn">Deliver line</button>
+      <div class="row" style="margin-top:10px">
+        <button onclick="submitRunLine()" class="btn-stage" id="run-submit-btn">Deliver line</button>
         <button onclick="revealRunLine()">Show line</button>
       </div>
       <div id="run-reveal-block" class="your-line-block hidden" style="margin-top:10px">
@@ -224,94 +567,157 @@
       </div>
       <div id="run-feedback" class="feedback-block hidden"></div>
       <div id="run-next-wrap" class="hidden" style="margin-top:10px">
-        <button onclick="advanceRunthrough()" class="success" style="width:100%">Continue scene &#8594;</button>
+        <button onclick="advanceRunthrough()" class="btn-green" style="width:100%">Continue scene &#8594;</button>
       </div>
     </div>
-    <div id="run-complete" class="hidden" style="text-align:center;padding:2rem 0">
-      <div style="font-size:18px;font-weight:500;margin-bottom:8px">Scene complete!</div>
-      <div style="font-size:14px;color:#666;margin-bottom:16px">Great work running through the scene.</div>
-      <button onclick="showStep('lines')" class="primary">Back to my lines</button>
+    <div id="run-complete" class="hidden" style="text-align:center;padding:2.5rem 0">
+      <div style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:8px">Scene complete.</div>
+      <div style="font-size:14px;color:var(--ink3);margin-bottom:1.25rem">Well done running through the whole scene.</div>
+      <button onclick="showStep('lines')" class="btn-stage">Back to my lines</button>
     </div>
   </div>
 
 </div>
+</div>
+
 <script>
-  // ── IMPORTANT: Replace this with your actual Vercel URL once deployed ──
-  const API_URL = "/api/claude";
-  const MODEL = "claude-sonnet-4-20250514";
+const API_URL = "/api/claude";
+const MODEL = "claude-sonnet-4-20250514";
+const STORAGE_KEY = "linecoach_save";
 
-  let scriptText = "", actorName = "", playTitle = "";
-  let myLines = [], currentLineIdx = 0;
-  let allSceneLines = [], runIdx = 0;
+let scriptText = "", actorName = "", playTitle = "";
+let myLines = [], currentLineIdx = 0;
+let allSceneLines = [], runIdx = 0;
 
-  function switchInput(mode) {
-    document.getElementById("input-paste").classList.toggle("hidden", mode !== "paste");
-    document.getElementById("input-pdf").classList.toggle("hidden", mode !== "pdf");
-    document.querySelectorAll(".tab").forEach((t, i) => {
-      t.classList.toggle("active", (mode === "paste" && i === 0) || (mode === "pdf" && i === 1));
-    });
+// ── SAVE / LOAD ───────────────────────────────────────────
+function saveProgress() {
+  const data = { scriptText, actorName, playTitle, myLines, ts: Date.now() };
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    document.getElementById("saved-pill").classList.add("visible");
+  } catch(e) { console.warn("Could not save:", e); }
+}
+
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch(e) { return null; }
+}
+
+function clearProgress() {
+  localStorage.removeItem(STORAGE_KEY);
+  document.getElementById("saved-pill").classList.remove("visible");
+}
+
+// ── LANDING ───────────────────────────────────────────────
+window.addEventListener("DOMContentLoaded", () => {
+  const saved = loadProgress();
+  if (saved && saved.myLines && saved.myLines.length > 0) {
+    const resumeBtn = document.getElementById("btn-resume");
+    resumeBtn.style.display = "block";
+    resumeBtn.textContent = `Resume — ${saved.actorName}${saved.playTitle ? " in " + saved.playTitle : ""}`;
   }
+});
 
-  async function handlePDF(input) {
-    const file = input.files[0];
-    if (!file) return;
-    document.getElementById("pdf-status").textContent = "Reading PDF...";
-    try {
-      const arrayBuffer = await file.arrayBuffer();
-      const uint8 = new Uint8Array(arrayBuffer);
-      let binary = "";
-      for (let i = 0; i < uint8.length; i++) binary += String.fromCharCode(uint8[i]);
-      const base64 = btoa(binary);
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: MODEL, max_tokens: 4096,
-          messages: [{
-            role: "user",
-            content: [
-              { type: "document", source: { type: "base64", media_type: "application/pdf", data: base64 } },
-              { type: "text", text: "Extract the full text of this script exactly as written. Return only the raw script text, preserving all speaker names, dialogue, and stage directions. No commentary." }
-            ]
-          }]
-        })
-      });
-      const data = await res.json();
-      const extracted = data.content?.find(b => b.type === "text")?.text || "";
-      if (extracted) {
-        document.getElementById("script-text").value = extracted;
-        switchInput("paste");
-        document.getElementById("pdf-status").textContent = "PDF extracted successfully";
-      } else {
-        document.getElementById("pdf-status").textContent = "Could not extract — try pasting instead";
-      }
-    } catch (e) {
-      document.getElementById("pdf-status").textContent = "Error: " + e.message;
+function enterApp(resume) {
+  document.getElementById("screen-landing").style.display = "none";
+  document.getElementById("screen-app").classList.add("active");
+
+  if (resume) {
+    const saved = loadProgress();
+    if (saved) {
+      scriptText = saved.scriptText;
+      actorName = saved.actorName;
+      playTitle = saved.playTitle;
+      myLines = saved.myLines;
+      document.getElementById("script-text").value = scriptText;
+      document.getElementById("actor-name").value = actorName;
+      document.getElementById("play-title").value = playTitle;
+      renderLinesOverview(null);
+      showStep("lines");
+      document.getElementById("saved-pill").classList.add("visible");
+      return;
     }
   }
+  showStep("setup");
+}
 
-  async function parseScript() {
-    const raw = document.getElementById("script-text").value.trim();
-    const name = document.getElementById("actor-name").value.trim();
-    const title = document.getElementById("play-title").value.trim();
-    const errEl = document.getElementById("parse-error");
-    if (!raw) { errEl.textContent = "Please paste a script first."; return; }
-    if (!name) { errEl.textContent = "Please enter your character name."; return; }
-    errEl.textContent = "";
-    scriptText = raw; actorName = name; playTitle = title;
-    const btn = document.getElementById("parse-btn");
-    btn.innerHTML = '<span class="spinner"></span>Parsing...';
-    btn.disabled = true;
-    try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: MODEL, max_tokens: 4096,
-          system: "You are a script analyser. Extract structured data from theatre scripts. Return only valid JSON, no markdown.",
-          messages: [{
-            role: "user",
-            content: `Analyse this script and extract every line spoken by "${name}".
+function goHome() {
+  document.getElementById("screen-landing").style.display = "flex";
+  document.getElementById("screen-app").classList.remove("active");
+}
+
+// ── SCRIPT INPUT ──────────────────────────────────────────
+function switchInput(mode) {
+  document.getElementById("input-paste").classList.toggle("hidden", mode !== "paste");
+  document.getElementById("input-pdf").classList.toggle("hidden", mode !== "pdf");
+  document.querySelectorAll(".tab").forEach((t, i) => {
+    t.classList.toggle("active", (mode === "paste" && i === 0) || (mode === "pdf" && i === 1));
+  });
+}
+
+async function handlePDF(input) {
+  const file = input.files[0];
+  if (!file) return;
+  document.getElementById("pdf-status").textContent = "Reading PDF...";
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const uint8 = new Uint8Array(arrayBuffer);
+    let binary = "";
+    for (let i = 0; i < uint8.length; i++) binary += String.fromCharCode(uint8[i]);
+    const base64 = btoa(binary);
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: MODEL, max_tokens: 4096,
+        messages: [{
+          role: "user",
+          content: [
+            { type: "document", source: { type: "base64", media_type: "application/pdf", data: base64 } },
+            { type: "text", text: "Extract the full text of this script exactly as written. Return only the raw script text, preserving all speaker names, dialogue, and stage directions. No commentary." }
+          ]
+        }]
+      })
+    });
+    const data = await res.json();
+    const extracted = data.content?.find(b => b.type === "text")?.text || "";
+    if (extracted) {
+      document.getElementById("script-text").value = extracted;
+      switchInput("paste");
+      document.getElementById("pdf-status").textContent = "PDF extracted successfully";
+    } else {
+      document.getElementById("pdf-status").textContent = "Could not extract — try pasting instead";
+    }
+  } catch (e) {
+    document.getElementById("pdf-status").textContent = "Error: " + e.message;
+  }
+}
+
+async function parseScript() {
+  const raw = document.getElementById("script-text").value.trim();
+  const name = document.getElementById("actor-name").value.trim();
+  const title = document.getElementById("play-title").value.trim();
+  const errEl = document.getElementById("parse-error");
+  if (!raw) { errEl.textContent = "Please paste a script first."; return; }
+  if (!name) { errEl.textContent = "Please enter your character name."; return; }
+  errEl.textContent = "";
+  scriptText = raw; actorName = name; playTitle = title;
+  const btn = document.getElementById("parse-btn");
+  btn.innerHTML = '<span class="spinner"></span>Finding your lines...';
+  btn.disabled = true;
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: MODEL, max_tokens: 4096,
+        system: "You are a script analyser. Extract structured data from theatre scripts. Return only valid JSON, no markdown.",
+        messages: [{
+          role: "user",
+          content: `Analyse this script and extract every line spoken by "${name}".
 
 For each of ${name}'s lines return:
 - "act": the act name/number
@@ -333,95 +739,97 @@ Return JSON in this exact format:
 
 Script:
 ${scriptText.slice(0, 12000)}`
-          }]
-        })
-      });
-      const data = await res.json();
-      const text = data.content?.find(b => b.type === "text")?.text || "";
-      const clean = text.replace(/```json|```/g, "").trim();
-      const parsed = JSON.parse(clean);
-      myLines = parsed.lines || [];
-      const summary = parsed.character_summary || "";
-      if (myLines.length === 0) {
-        errEl.textContent = `No lines found for "${name}". Check the spelling matches the script exactly.`;
-        btn.innerHTML = "Parse script &amp; find my lines"; btn.disabled = false;
-        return;
-      }
-      renderLinesOverview(summary);
-      showStep("lines");
-    } catch (e) {
-      errEl.textContent = "Parse error: " + e.message;
-    }
-    btn.innerHTML = "Parse script &amp; find my lines"; btn.disabled = false;
-  }
-
-  function renderLinesOverview(summary) {
-    document.getElementById("lines-title").textContent = actorName + (playTitle ? " — " + playTitle : "");
-    document.getElementById("lines-sub").textContent = myLines.length + " lines found" + (summary ? " · " + summary.split(".")[0] + "." : "");
-    const list = document.getElementById("line-list");
-    list.innerHTML = "";
-    myLines.forEach((l, i) => {
-      const div = document.createElement("div");
-      div.className = "line-item";
-      div.innerHTML = `<span class="line-num">${i + 1}</span>
-        <div>
-          <span class="badge badge-blue" style="margin-bottom:4px;display:inline-block">${l.act}</span><br/>
-          <span style="color:#888;font-size:12px">${l.cue_speaker}: </span>
-          <span style="font-size:12px;color:#aaa">${l.cue_line.slice(0, 60)}...</span><br/>
-          <span style="font-size:13px">${l.your_line.slice(0, 80)}${l.your_line.length > 80 ? "..." : ""}</span>
-        </div>`;
-      list.appendChild(div);
+        }]
+      })
     });
+    const data = await res.json();
+    const text = data.content?.find(b => b.type === "text")?.text || "";
+    const clean = text.replace(/```json|```/g, "").trim();
+    const parsed = JSON.parse(clean);
+    myLines = parsed.lines || [];
+    const summary = parsed.character_summary || "";
+    if (myLines.length === 0) {
+      errEl.textContent = `No lines found for "${name}". Check the spelling matches the script exactly.`;
+      btn.innerHTML = "Find my lines"; btn.disabled = false;
+      return;
+    }
+    saveProgress();
+    renderLinesOverview(summary);
+    showStep("lines");
+  } catch (e) {
+    errEl.textContent = "Parse error: " + e.message;
   }
+  btn.innerHTML = "Find my lines"; btn.disabled = false;
+}
 
-  function startMode(mode) {
-    currentLineIdx = 0;
-    if (mode === "drill") { showStep("drill"); renderDrillLine(); }
-    else { runIdx = 0; showStep("runthrough"); buildSceneLines(); renderRunthrough(); }
-  }
+function renderLinesOverview(summary) {
+  document.getElementById("lines-title").textContent = actorName + (playTitle ? " — " + playTitle : "");
+  document.getElementById("lines-sub").textContent = myLines.length + " lines found" + (summary ? " · " + summary.split(".")[0] + "." : "");
+  const list = document.getElementById("line-list");
+  list.innerHTML = "";
+  myLines.forEach((l, i) => {
+    const div = document.createElement("div");
+    div.className = "line-item";
+    div.innerHTML = `<span class="line-num">${i + 1}</span>
+      <div>
+        <span class="badge badge-blue" style="margin-bottom:4px;display:inline-block">${l.act}</span><br/>
+        <span style="color:var(--ink3);font-size:12px">${l.cue_speaker}: </span>
+        <span style="font-size:12px;color:var(--ink3)">${l.cue_line.slice(0, 60)}...</span><br/>
+        <span style="font-size:13px;color:var(--ink)">${l.your_line.slice(0, 80)}${l.your_line.length > 80 ? "..." : ""}</span>
+      </div>`;
+    list.appendChild(div);
+  });
+}
 
-  function renderDrillLine() {
-    const l = myLines[currentLineIdx];
-    document.getElementById("drill-counter").textContent = `Line ${currentLineIdx + 1} of ${myLines.length}`;
-    document.getElementById("drill-progress").style.width = ((currentLineIdx + 1) / myLines.length * 100) + "%";
-    document.getElementById("drill-scene").textContent = l.act + (l.scene_direction ? " · " + l.scene_direction : "");
-    document.getElementById("drill-cue-speaker").textContent = l.cue_speaker + ":";
-    document.getElementById("drill-cue-text").textContent = l.cue_line;
-    document.getElementById("reveal-speaker").textContent = actorName + ":";
-    document.getElementById("reveal-text").textContent = l.your_line;
-    document.getElementById("drill-input").value = "";
-    document.getElementById("drill-reveal").classList.add("hidden");
-    document.getElementById("drill-feedback").classList.add("hidden");
-    document.getElementById("btn-prev").disabled = currentLineIdx === 0;
-    document.getElementById("btn-next").disabled = currentLineIdx === myLines.length - 1;
-  }
+// ── MODES ─────────────────────────────────────────────────
+function startMode(mode) {
+  currentLineIdx = 0;
+  if (mode === "drill") { showStep("drill"); renderDrillLine(); }
+  else { runIdx = 0; showStep("runthrough"); buildSceneLines(); renderRunthrough(); }
+}
 
-  function prevLine() { if (currentLineIdx > 0) { currentLineIdx--; renderDrillLine(); } }
-  function nextLine() { if (currentLineIdx < myLines.length - 1) { currentLineIdx++; renderDrillLine(); } }
-  function revealLine() { document.getElementById("drill-reveal").classList.remove("hidden"); }
-  function clearFeedback() { document.getElementById("drill-feedback").classList.add("hidden"); }
-  function clearRunFeedback() { document.getElementById("run-feedback").classList.add("hidden"); }
+function renderDrillLine() {
+  const l = myLines[currentLineIdx];
+  document.getElementById("drill-counter").textContent = `Line ${currentLineIdx + 1} of ${myLines.length}`;
+  document.getElementById("drill-progress").style.width = ((currentLineIdx + 1) / myLines.length * 100) + "%";
+  document.getElementById("drill-scene").textContent = l.act + (l.scene_direction ? " · " + l.scene_direction : "");
+  document.getElementById("drill-cue-speaker").textContent = l.cue_speaker;
+  document.getElementById("drill-cue-text").textContent = l.cue_line;
+  document.getElementById("reveal-speaker").textContent = actorName;
+  document.getElementById("reveal-text").textContent = l.your_line;
+  document.getElementById("drill-input").value = "";
+  document.getElementById("drill-reveal").classList.add("hidden");
+  document.getElementById("drill-feedback").classList.add("hidden");
+  document.getElementById("btn-prev").disabled = currentLineIdx === 0;
+  document.getElementById("btn-next").disabled = currentLineIdx === myLines.length - 1;
+}
 
-  async function submitDrillLine() {
-    const attempt = document.getElementById("drill-input").value.trim();
-    if (!attempt) return;
-    const l = myLines[currentLineIdx];
-    const fb = document.getElementById("drill-feedback");
-    const btn = document.getElementById("drill-submit-btn");
-    fb.innerHTML = '<span class="spinner"></span>Getting coaching...';
-    fb.className = "feedback-block loading";
-    fb.classList.remove("hidden");
-    btn.disabled = true;
-    try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: MODEL, max_tokens: 600,
-          system: "You are an experienced theatre director giving warm, specific, actionable coaching to an actor. Be encouraging but honest. Keep feedback to 3-4 sentences max. Focus on: accuracy, pacing, emotional tone, and character motivation.",
-          messages: [{
-            role: "user",
-            content: `Character: ${actorName}
+function prevLine() { if (currentLineIdx > 0) { currentLineIdx--; renderDrillLine(); } }
+function nextLine() { if (currentLineIdx < myLines.length - 1) { currentLineIdx++; renderDrillLine(); } }
+function revealLine() { document.getElementById("drill-reveal").classList.remove("hidden"); }
+function clearFeedback() { document.getElementById("drill-feedback").classList.add("hidden"); }
+function clearRunFeedback() { document.getElementById("run-feedback").classList.add("hidden"); }
+
+async function submitDrillLine() {
+  const attempt = document.getElementById("drill-input").value.trim();
+  if (!attempt) return;
+  const l = myLines[currentLineIdx];
+  const fb = document.getElementById("drill-feedback");
+  const btn = document.getElementById("drill-submit-btn");
+  fb.innerHTML = '<span class="spinner"></span>Getting coaching...';
+  fb.className = "feedback-block loading";
+  fb.classList.remove("hidden");
+  btn.disabled = true;
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: MODEL, max_tokens: 600,
+        system: "You are an experienced theatre director giving warm, specific, actionable coaching to an actor. Be encouraging but honest. Keep feedback to 3-4 sentences max. Focus on: accuracy, pacing, emotional tone, and character motivation.",
+        messages: [{
+          role: "user",
+          content: `Character: ${actorName}
 Play: ${playTitle || "unknown"}
 Act: ${l.act}
 
@@ -432,128 +840,134 @@ ${l.stage_direction ? "Stage direction: " + l.stage_direction : ""}
 Actor typed: "${attempt}"
 
 Give delivery coaching. Note accuracy first, then give specific advice on pacing, emotional emphasis, and how the character would say this. End with one encouragement.`
-          }]
-        })
-      });
-      const data = await res.json();
-      const text = data.content?.find(b => b.type === "text")?.text || "No feedback received.";
-      fb.innerHTML = text.replace(/\n/g, "<br/>");
-      fb.className = "feedback-block";
-      document.getElementById("drill-reveal").classList.remove("hidden");
-    } catch (e) {
-      fb.innerHTML = "Error: " + e.message;
-      fb.className = "feedback-block";
-    }
-    btn.disabled = false;
-  }
-
-  function buildSceneLines() {
-    allSceneLines = [];
-    myLines.forEach((myLine, myIdx) => {
-      allSceneLines.push({ type: "cue", speaker: myLine.cue_speaker, text: myLine.cue_line, myLineIdx: myIdx });
-      allSceneLines.push({ type: "mine", myLineIdx: myIdx });
+        }]
+      })
     });
+    const data = await res.json();
+    const text = data.content?.find(b => b.type === "text")?.text || "No feedback received.";
+    fb.innerHTML = text.replace(/\n/g, "<br/>");
+    fb.className = "feedback-block";
+    document.getElementById("drill-reveal").classList.remove("hidden");
+  } catch (e) {
+    fb.innerHTML = "Error: " + e.message;
+    fb.className = "feedback-block";
   }
+  btn.disabled = false;
+}
 
-  function renderRunthrough() {
-    if (runIdx >= allSceneLines.length) {
-      document.getElementById("run-your-turn").classList.add("hidden");
-      document.getElementById("run-complete").classList.remove("hidden");
-      return;
-    }
-    const item = allSceneLines[runIdx];
-    const doneLines = Math.floor(runIdx / 2);
-    document.getElementById("run-counter").textContent = `Line ${doneLines + 1} of ${myLines.length}`;
-    document.getElementById("run-progress").style.width = (doneLines / myLines.length * 100) + "%";
-    const ctx = document.getElementById("scene-context");
-    if (item.type === "cue") {
-      ctx.innerHTML = "";
-      const l = myLines[item.myLineIdx];
-      if (l.act || l.scene_direction) {
-        ctx.innerHTML = `<div class="scene-tag">${l.act}${l.scene_direction ? " · " + l.scene_direction : ""}</div>`;
-      }
-      const div = document.createElement("div");
-      div.className = "other-line";
-      div.innerHTML = `<div class="other-speaker">${item.speaker}</div><div>${item.text}</div>`;
-      ctx.appendChild(div);
-      document.getElementById("run-your-turn").classList.add("hidden");
-      setTimeout(() => { runIdx++; renderRunthrough(); }, 1400);
-    } else {
-      const l = myLines[item.myLineIdx];
-      document.getElementById("run-cue-speaker").textContent = l.cue_speaker + ":";
-      document.getElementById("run-cue-text").textContent = l.cue_line;
-      document.getElementById("run-reveal-speaker").textContent = actorName + ":";
-      document.getElementById("run-reveal-text").textContent = l.your_line;
-      document.getElementById("run-input").value = "";
-      document.getElementById("run-reveal-block").classList.add("hidden");
-      document.getElementById("run-feedback").classList.add("hidden");
-      document.getElementById("run-next-wrap").classList.add("hidden");
-      document.getElementById("run-your-turn").classList.remove("hidden");
-    }
+function buildSceneLines() {
+  allSceneLines = [];
+  myLines.forEach((myLine, myIdx) => {
+    allSceneLines.push({ type: "cue", speaker: myLine.cue_speaker, text: myLine.cue_line, myLineIdx: myIdx });
+    allSceneLines.push({ type: "mine", myLineIdx: myIdx });
+  });
+}
+
+function renderRunthrough() {
+  if (runIdx >= allSceneLines.length) {
+    document.getElementById("run-your-turn").classList.add("hidden");
+    document.getElementById("run-complete").classList.remove("hidden");
+    return;
   }
-
-  function revealRunLine() {
-    document.getElementById("run-reveal-block").classList.remove("hidden");
-    document.getElementById("run-next-wrap").classList.remove("hidden");
-  }
-
-  async function submitRunLine() {
-    const attempt = document.getElementById("run-input").value.trim();
-    if (!attempt) return;
-    const item = allSceneLines[runIdx];
+  const item = allSceneLines[runIdx];
+  const doneLines = Math.floor(runIdx / 2);
+  document.getElementById("run-counter").textContent = `Line ${doneLines + 1} of ${myLines.length}`;
+  document.getElementById("run-progress").style.width = (doneLines / myLines.length * 100) + "%";
+  const ctx = document.getElementById("scene-context");
+  if (item.type === "cue") {
+    ctx.innerHTML = "";
     const l = myLines[item.myLineIdx];
-    const fb = document.getElementById("run-feedback");
-    const btn = document.getElementById("run-submit-btn");
-    fb.innerHTML = '<span class="spinner"></span>Director\'s note...';
-    fb.className = "feedback-block loading";
-    fb.classList.remove("hidden");
-    document.getElementById("run-reveal-block").classList.remove("hidden");
-    document.getElementById("run-next-wrap").classList.remove("hidden");
-    btn.disabled = true;
-    try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: MODEL, max_tokens: 400,
-          system: "You are a theatre director giving brief, warm in-rehearsal notes. Keep it to 2-3 sentences. Be specific and encouraging.",
-          messages: [{
-            role: "user",
-            content: `Character: ${actorName} | Act: ${l.act}
+    if (l.act || l.scene_direction) {
+      ctx.innerHTML = `<div class="scene-tag">${l.act}${l.scene_direction ? " · " + l.scene_direction : ""}</div>`;
+    }
+    const div = document.createElement("div");
+    div.className = "other-line";
+    div.innerHTML = `<div class="other-speaker">${item.speaker}</div><div>${item.text}</div>`;
+    ctx.appendChild(div);
+    document.getElementById("run-your-turn").classList.add("hidden");
+    setTimeout(() => { runIdx++; renderRunthrough(); }, 1400);
+  } else {
+    const l = myLines[item.myLineIdx];
+    document.getElementById("run-cue-speaker").textContent = l.cue_speaker;
+    document.getElementById("run-cue-text").textContent = l.cue_line;
+    document.getElementById("run-reveal-speaker").textContent = actorName;
+    document.getElementById("run-reveal-text").textContent = l.your_line;
+    document.getElementById("run-input").value = "";
+    document.getElementById("run-reveal-block").classList.add("hidden");
+    document.getElementById("run-feedback").classList.add("hidden");
+    document.getElementById("run-next-wrap").classList.add("hidden");
+    document.getElementById("run-your-turn").classList.remove("hidden");
+  }
+}
+
+function revealRunLine() {
+  document.getElementById("run-reveal-block").classList.remove("hidden");
+  document.getElementById("run-next-wrap").classList.remove("hidden");
+}
+
+async function submitRunLine() {
+  const attempt = document.getElementById("run-input").value.trim();
+  if (!attempt) return;
+  const item = allSceneLines[runIdx];
+  const l = myLines[item.myLineIdx];
+  const fb = document.getElementById("run-feedback");
+  const btn = document.getElementById("run-submit-btn");
+  fb.innerHTML = '<span class="spinner"></span>Director\'s note...';
+  fb.className = "feedback-block loading";
+  fb.classList.remove("hidden");
+  document.getElementById("run-reveal-block").classList.remove("hidden");
+  document.getElementById("run-next-wrap").classList.remove("hidden");
+  btn.disabled = true;
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: MODEL, max_tokens: 400,
+        system: "You are a theatre director giving brief, warm in-rehearsal notes. Keep it to 2-3 sentences. Be specific and encouraging.",
+        messages: [{
+          role: "user",
+          content: `Character: ${actorName} | Act: ${l.act}
 Cue: "${l.cue_line}"
 Correct line: "${l.your_line}"
 ${l.stage_direction ? "Stage direction: " + l.stage_direction : ""}
 Actor delivered: "${attempt}"
 Give a quick director's note on accuracy, emotion, and delivery.`
-          }]
-        })
-      });
-      const data = await res.json();
-      const text = data.content?.find(b => b.type === "text")?.text || "";
-      fb.innerHTML = text.replace(/\n/g, "<br/>");
-      fb.className = "feedback-block";
-    } catch (e) {
-      fb.innerHTML = "Could not get feedback.";
-      fb.className = "feedback-block";
-    }
-    btn.disabled = false;
-  }
-
-  function advanceRunthrough() { runIdx++; document.getElementById("run-your-turn").classList.add("hidden"); renderRunthrough(); }
-
-  function showStep(step) {
-    ["setup", "lines", "drill", "runthrough"].forEach(s => {
-      document.getElementById("step-" + s).classList.toggle("hidden", s !== step);
+        }]
+      })
     });
+    const data = await res.json();
+    const text = data.content?.find(b => b.type === "text")?.text || "";
+    fb.innerHTML = text.replace(/\n/g, "<br/>");
+    fb.className = "feedback-block";
+  } catch (e) {
+    fb.innerHTML = "Could not get feedback.";
+    fb.className = "feedback-block";
   }
+  btn.disabled = false;
+}
 
-  function resetApp() {
-    scriptText = ""; actorName = ""; myLines = []; currentLineIdx = 0;
-    document.getElementById("script-text").value = "";
-    document.getElementById("actor-name").value = "";
-    document.getElementById("play-title").value = "";
-    showStep("setup");
-  }
+function advanceRunthrough() {
+  runIdx++;
+  document.getElementById("run-your-turn").classList.add("hidden");
+  renderRunthrough();
+}
+
+function showStep(step) {
+  ["setup", "lines", "drill", "runthrough"].forEach(s => {
+    document.getElementById("step-" + s).classList.toggle("hidden", s !== step);
+  });
+}
+
+function resetApp() {
+  if (!confirm("This will clear your saved progress. Are you sure?")) return;
+  scriptText = ""; actorName = ""; myLines = []; currentLineIdx = 0;
+  document.getElementById("script-text").value = "";
+  document.getElementById("actor-name").value = "";
+  document.getElementById("play-title").value = "";
+  clearProgress();
+  showStep("setup");
+}
 </script>
 </body>
 </html>
