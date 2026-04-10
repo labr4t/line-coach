@@ -399,6 +399,95 @@
   }
   .toast.show { opacity: 1; }
 
+
+  /* ── CONFIDENCE HEATMAP ──────────────────────────────── */
+  .conf-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 4px;
+  }
+  .conf-green { background: #3B6D11; }
+  .conf-amber { background: #BA7517; }
+  .conf-grey  { background: var(--paper3); border: 1px solid var(--paper3); }
+
+  .line-item .mark-btn {
+    margin-left: auto; flex-shrink: 0; font-size: 11px; padding: 3px 8px;
+    border-radius: 6px; border: 1px solid var(--paper3); background: transparent;
+    color: var(--ink3); cursor: pointer; white-space: nowrap;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+  }
+  .line-item .mark-btn.learned {
+    background: #EAF3DE; color: #3B6D11; border-color: #C0DD97;
+  }
+  .line-item .mark-btn.learned:hover { background: #C0DD97; }
+  .line-item .mark-btn:not(.learned):hover { background: var(--paper2); border-color: var(--ink3); }
+
+  .conf-legend {
+    display: flex; gap: 12px; align-items: center;
+    font-size: 11px; color: var(--ink3); margin-bottom: 10px; flex-wrap: wrap;
+  }
+  .conf-legend-item { display: flex; align-items: center; gap: 4px; }
+
+  /* ── DIFFICULTY TOGGLE ───────────────────────────────── */
+  .difficulty-toggle {
+    display: flex; gap: 0; margin-bottom: 10px;
+    border: 1px solid var(--paper3); border-radius: var(--radius); overflow: hidden;
+  }
+  .difficulty-toggle button {
+    flex: 1; padding: 6px 12px; border: none; border-radius: 0;
+    font-size: 12px; font-weight: 400; cursor: pointer; background: transparent;
+    color: var(--ink3); transition: background 0.12s, color 0.12s;
+  }
+  .difficulty-toggle button.active {
+    background: var(--stage); color: #fff; font-weight: 500;
+  }
+  .difficulty-toggle button:first-child { border-right: 1px solid var(--paper3); }
+
+  /* ── BEAT MODE ───────────────────────────────────────── */
+  .beat-nav {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;
+  }
+  .beat-pill {
+    font-size: 11px; padding: 4px 10px; border-radius: 99px;
+    border: 1px solid var(--paper3); background: transparent;
+    color: var(--ink3); cursor: pointer; transition: all 0.12s;
+  }
+  .beat-pill.active { background: var(--stage); color: #fff; border-color: var(--stage); }
+  .beat-pill.done { background: #EAF3DE; color: #3B6D11; border-color: #C0DD97; }
+
+  /* ── PERFORMANCE MODE ────────────────────────────────── */
+  .teleprompter-wrap {
+    background: var(--ink); color: var(--paper); border-radius: var(--radius-lg);
+    padding: 2rem 1.5rem; margin-bottom: 1rem; min-height: 160px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif;
+    position: relative; overflow: hidden;
+  }
+  .teleprompter-line {
+    font-size: clamp(18px, 4vw, 26px); line-height: 1.5;
+    text-align: center; transition: opacity 0.6s;
+    user-select: none; position: relative; z-index: 1;
+  }
+  .teleprompter-fade {
+    position: absolute; top: 0; left: 0; height: 100%;
+    background: var(--ink); z-index: 2; transition: width 0s;
+  }
+  .teleprompter-controls {
+    display: flex; gap: 8px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;
+  }
+  .speed-btn {
+    padding: 5px 12px; border-radius: 6px; font-size: 12px;
+    border: 1px solid var(--paper3); background: transparent; cursor: pointer; color: var(--ink2);
+  }
+  .speed-btn.active { background: var(--stage); color: #fff; border-color: var(--stage); }
+  .pass-indicator {
+    display: flex; gap: 6px; margin-bottom: 10px;
+  }
+  .pass-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--paper3);
+    transition: background 0.3s;
+  }
+  .pass-dot.active { background: var(--stage); }
+  .pass-dot.done { background: var(--green); }
+
   @media (max-width: 500px) {
     .landing-title { font-size: 42px; }
     .landing-features { gap: 1.25rem; }
@@ -516,6 +605,11 @@
       </div>
       <button onclick="resetApp()" style="font-size:12px;padding:6px 12px;color:var(--red);border-color:var(--paper3)">Clear &amp; restart</button>
     </div>
+    <div class="conf-legend">
+      <span class="conf-legend-item"><span class="conf-dot conf-green"></span>Confident</span>
+      <span class="conf-legend-item"><span class="conf-dot conf-amber"></span>Attempted</span>
+      <span class="conf-legend-item"><span class="conf-dot conf-grey"></span>Not yet tried</span>
+    </div>
     <div class="line-list" id="line-list"></div>
     <hr />
     <label style="margin-bottom:10px">Choose your practice mode</label>
@@ -528,6 +622,14 @@
       <div class="mode-card" onclick="startMode('runthrough')">
         <div class="mode-card-title">Scene run-through</div>
         <div class="mode-card-desc">AI plays every other character. Best once you roughly know the scene.</div>
+      </div>
+      <div class="mode-card" onclick="startMode('beat')" style="min-width:200px">
+        <div class="mode-card-title">Beat-by-beat</div>
+        <div class="mode-card-desc">Learn in small chunks. Stitch beats together as you go.</div>
+      </div>
+      <div class="mode-card" onclick="startMode('perf')" style="min-width:200px">
+        <div class="mode-card-title">Performance mode</div>
+        <div class="mode-card-desc">Your lines scroll like a teleprompter. Text fades as you improve.</div>
       </div>
     </div>
   </div>
@@ -554,6 +656,10 @@
       <div class="cue-speaker" id="drill-cue-speaker"></div>
       <div class="cue-text" id="drill-cue-text"></div>
     </div>
+    <div class="difficulty-toggle" style="margin-bottom:10px">
+      <button id="diff-basic" class="active" onclick="setDifficulty('basic')">Basic — paraphrase ok</button>
+      <button id="diff-precise" onclick="setDifficulty('precise')">Precision — word perfect</button>
+    </div>
     <div style="margin-bottom:10px">
       <label>Your line from memory</label>
       <textarea id="drill-input" placeholder="Type your line here..." style="min-height:90px" oninput="clearFeedback()"></textarea>
@@ -567,6 +673,95 @@
       <div class="your-line-text" id="reveal-text"></div>
     </div>
     <div id="drill-feedback" class="feedback-block hidden"></div>
+    <div style="margin-top:10px;text-align:right">
+      <button id="drill-mark-btn" onclick="toggleLearnedCurrent()" style="font-size:12px;padding:6px 12px">Mark as learned</button>
+    </div>
+  </div>
+
+  <!-- STEP 3c: Beat-by-beat mode -->
+  <div id="step-beat" class="card hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <span style="font-size:13px;font-weight:500;color:var(--ink)">Beat-by-beat</span>
+      <button onclick="showStep('lines')" style="font-size:12px;padding:6px 12px">Back</button>
+    </div>
+    <div class="progress-wrap"><div class="progress-bar" id="beat-progress" style="width:0%"></div></div>
+    <div class="navigation" style="margin-bottom:0">
+      <span class="nav-info" id="beat-counter">Beat 1 of ?</span>
+    </div>
+    <hr />
+    <div style="font-size:12px;color:var(--ink3);margin-bottom:6px">Choose a beat to practise:</div>
+    <div class="beat-nav" id="beat-nav"></div>
+    <hr />
+    <div id="beat-drill-area">
+      <div class="scene-tag" id="beat-scene"></div>
+      <div class="cue-block">
+        <div class="cue-speaker" id="beat-cue-speaker"></div>
+        <div class="cue-text" id="beat-cue-text"></div>
+      </div>
+      <div style="margin-bottom:10px">
+        <label>Lines in this beat — type from memory</label>
+        <textarea id="beat-input" placeholder="Type your line..." style="min-height:90px" oninput="clearBeatFeedback()"></textarea>
+      </div>
+      <div class="row">
+        <button onclick="submitBeatLine()" class="btn-stage" id="beat-submit-btn">Get coaching</button>
+        <button onclick="revealBeatLine()">Show line</button>
+      </div>
+      <div id="beat-reveal" class="your-line-block hidden" style="margin-top:10px">
+        <div class="your-line-speaker" id="beat-reveal-speaker"></div>
+        <div class="your-line-text" id="beat-reveal-text"></div>
+      </div>
+      <div id="beat-feedback" class="feedback-block hidden"></div>
+      <div style="margin-top:10px;display:flex;gap:8px">
+        <button onclick="prevBeatLine()" id="beat-prev" style="font-size:12px;padding:6px 12px">&#8592;</button>
+        <button onclick="nextBeatLine()" id="beat-next" class="btn-stage" style="flex:1;font-size:13px">Next in beat &#8594;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3d: Performance mode -->
+  <div id="step-perf" class="card hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <span style="font-size:13px;font-weight:500;color:var(--ink)">Performance mode</span>
+      <button onclick="showStep('lines')" style="font-size:12px;padding:6px 12px">Back</button>
+    </div>
+    <div style="font-size:12px;color:var(--ink3);margin-bottom:8px">Pass <span id="perf-pass-num">1</span> of 3 — <span id="perf-pass-label">Full text visible</span></div>
+    <div class="pass-indicator" id="pass-dots">
+      <div class="pass-dot active" id="pdot-0"></div>
+      <div class="pass-dot" id="pdot-1"></div>
+      <div class="pass-dot" id="pdot-2"></div>
+    </div>
+    <div class="progress-wrap"><div class="progress-bar" id="perf-progress" style="width:0%"></div></div>
+    <div class="navigation" style="margin-bottom:10px">
+      <span class="nav-info" id="perf-counter">Line 1 of ?</span>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span style="font-size:11px;color:var(--ink3)">Speed:</span>
+        <button class="speed-btn" onclick="setSpeed(6000)">Slow</button>
+        <button class="speed-btn active" onclick="setSpeed(3500)">Medium</button>
+        <button class="speed-btn" onclick="setSpeed(1800)">Fast</button>
+      </div>
+    </div>
+    <hr />
+    <div class="scene-tag" id="perf-scene"></div>
+    <div class="cue-block" style="margin-bottom:12px">
+      <div class="cue-speaker" id="perf-cue-speaker"></div>
+      <div class="cue-text" id="perf-cue-text"></div>
+    </div>
+    <div class="teleprompter-wrap" id="perf-wrap">
+      <div class="teleprompter-fade" id="perf-fade" style="width:0%"></div>
+      <div class="teleprompter-line" id="perf-line"></div>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <button onclick="perfPrev()" style="font-size:12px;padding:6px 12px">&#8592; Prev</button>
+      <button onclick="perfNext()" class="btn-stage" style="flex:1">Next line &#8594;</button>
+    </div>
+    <div style="margin-top:10px;text-align:center">
+      <button onclick="nextPerfPass()" id="next-pass-btn" class="btn-green" style="display:none;width:100%">Start pass <span id="next-pass-num">2</span> &#8594;</button>
+    </div>
+    <div id="perf-complete" class="hidden" style="text-align:center;padding:2rem 0">
+      <div style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:8px">All 3 passes done.</div>
+      <div style="font-size:14px;color:var(--ink3);margin-bottom:16px">You've gone from full text to first-letters only. That's real memorisation.</div>
+      <button onclick="showStep('lines')" class="btn-stage">Back to my lines</button>
+    </div>
   </div>
 
   <!-- STEP 3b: Scene Run-through -->
@@ -622,10 +817,15 @@ const STORAGE_KEY = "linecoach_save";
 let scriptText = "", actorName = "", playTitle = "";
 let myLines = [], currentLineIdx = 0;
 let allSceneLines = [], runIdx = 0;
+let lineConfidence = {};
+let drillDifficulty = "basic";
+let beats = [], currentBeat = 0, beatLineIdx = 0;
+let perfIdx = 0, perfPass = 0, perfSpeed = 3500, perfTimer = null;
+const BEAT_SIZE = 4;
 
 // ── SAVE / LOAD ───────────────────────────────────────────
 function saveProgress() {
-  const data = { scriptText, actorName, playTitle, myLines, ts: Date.now() };
+  const data = { scriptText, actorName, playTitle, myLines, lineConfidence, ts: Date.now() };
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     document.getElementById("saved-pill").classList.add("visible");
@@ -666,6 +866,7 @@ function enterApp(resume) {
       actorName = saved.actorName;
       playTitle = saved.playTitle;
       myLines = saved.myLines;
+      lineConfidence = saved.lineConfidence || {};
       document.getElementById("script-text").value = scriptText;
       document.getElementById("play-title").value = playTitle || "";
       document.getElementById("saved-pill").classList.add("visible");
@@ -872,15 +1073,22 @@ function renderLinesOverview(summary) {
   const list = document.getElementById("line-list");
   list.innerHTML = "";
   myLines.forEach((l, i) => {
+    const conf = lineConfidence[i];
+    const dotClass = conf === "learned" ? "conf-green" : conf === "attempted" ? "conf-amber" : "conf-grey";
+    const btnClass = conf === "learned" ? "learned" : "";
+    const btnLabel = conf === "learned" ? "✓ Learned" : "Mark as learned";
     const div = document.createElement("div");
     div.className = "line-item";
-    div.innerHTML = `<span class="line-num">${i + 1}</span>
-      <div>
+    div.style.alignItems = "center";
+    div.innerHTML = `<span class="conf-dot ${dotClass}" title="${conf || "not yet tried"}"></span>
+      <span class="line-num">${i + 1}</span>
+      <div style="flex:1;min-width:0">
         <span class="badge badge-blue" style="margin-bottom:4px;display:inline-block">${l.act}</span><br/>
         <span style="color:var(--ink3);font-size:12px">${l.cue_speaker}: </span>
-        <span style="font-size:12px;color:var(--ink3)">${l.cue_line.slice(0, 60)}...</span><br/>
-        <span style="font-size:13px;color:var(--ink)">${l.your_line.slice(0, 80)}${l.your_line.length > 80 ? "..." : ""}</span>
-      </div>`;
+        <span style="font-size:12px;color:var(--ink3)">${l.cue_line.slice(0, 50)}…</span><br/>
+        <span style="font-size:13px;color:var(--ink)">${l.your_line.slice(0, 70)}${l.your_line.length > 70 ? "…" : ""}</span>
+      </div>
+      <button class="mark-btn ${btnClass}" onclick="toggleLearned(${i}, this)">${btnLabel}</button>`;
     list.appendChild(div);
   });
 }
@@ -889,7 +1097,9 @@ function renderLinesOverview(summary) {
 function startMode(mode) {
   currentLineIdx = 0;
   if (mode === "drill") { showStep("drill"); renderDrillLine(); }
-  else { runIdx = 0; showStep("runthrough"); buildSceneLines(); renderRunthrough(); }
+  else if (mode === "runthrough") { runIdx = 0; showStep("runthrough"); buildSceneLines(); renderRunthrough(); }
+  else if (mode === "beat") { showStep("beat"); initBeatMode(); }
+  else if (mode === "perf") { perfIdx = 0; perfPass = 0; showStep("perf"); renderPerfLine(); }
 }
 
 function renderDrillLine() {
@@ -906,6 +1116,12 @@ function renderDrillLine() {
   document.getElementById("drill-feedback").classList.add("hidden");
   document.getElementById("btn-prev").disabled = currentLineIdx === 0;
   document.getElementById("btn-next").disabled = currentLineIdx === myLines.length - 1;
+  const markBtn = document.getElementById("drill-mark-btn");
+  if (markBtn) {
+    const isLearned = lineConfidence[currentLineIdx] === "learned";
+    markBtn.textContent = isLearned ? "✓ Learned" : "Mark as learned";
+    markBtn.classList.toggle("learned", isLearned);
+  }
 }
 
 function prevLine() { if (currentLineIdx > 0) { currentLineIdx--; renderDrillLine(); } }
@@ -918,6 +1134,7 @@ async function submitDrillLine() {
   const attempt = document.getElementById("drill-input").value.trim();
   if (!attempt) return;
   const l = myLines[currentLineIdx];
+  markAttempted(currentLineIdx);
   const fb = document.getElementById("drill-feedback");
   const btn = document.getElementById("drill-submit-btn");
   fb.innerHTML = '<span class="spinner"></span>Getting coaching...';
@@ -943,7 +1160,8 @@ ${l.stage_direction ? "Stage direction: " + l.stage_direction : ""}
 
 Actor typed: "${attempt}"
 
-Give delivery coaching. Note accuracy first, then give specific advice on pacing, emotional emphasis, and how the character would say this. End with one encouragement.`
+${drillDifficulty === "precise" ? "Precision mode: mark every single word that differs from the correct line." : "Basic mode: paraphrasing is acceptable, focus on meaning and delivery."}
+Give delivery coaching. Note accuracy, then give specific advice on pacing, emotional emphasis, and character motivation. End with one encouragement.`
         }]
       })
     });
@@ -1058,9 +1276,209 @@ function advanceRunthrough() {
 }
 
 function showStep(step) {
-  ["setup", "pick", "lines", "drill", "runthrough"].forEach(s => {
+  ["setup", "pick", "lines", "drill", "runthrough", "beat", "perf"].forEach(s => {
     document.getElementById("step-" + s).classList.toggle("hidden", s !== step);
   });
+}
+
+// ── CONFIDENCE ────────────────────────────────────────────
+function toggleLearned(idx, btn) {
+  if (lineConfidence[idx] === "learned") {
+    lineConfidence[idx] = "attempted";
+    btn.textContent = "Mark as learned";
+    btn.classList.remove("learned");
+    btn.closest(".line-item").querySelector(".conf-dot").className = "conf-dot conf-amber";
+  } else {
+    lineConfidence[idx] = "learned";
+    btn.textContent = "✓ Learned";
+    btn.classList.add("learned");
+    btn.closest(".line-item").querySelector(".conf-dot").className = "conf-dot conf-green";
+  }
+  saveProgress();
+}
+
+function toggleLearnedCurrent() {
+  const btn = document.getElementById("drill-mark-btn");
+  if (lineConfidence[currentLineIdx] === "learned") {
+    lineConfidence[currentLineIdx] = "attempted";
+    btn.textContent = "Mark as learned";
+    btn.classList.remove("learned");
+  } else {
+    lineConfidence[currentLineIdx] = "learned";
+    btn.textContent = "✓ Learned";
+    btn.classList.add("learned");
+  }
+  saveProgress();
+}
+
+function markAttempted(idx) {
+  if (!lineConfidence[idx]) {
+    lineConfidence[idx] = "attempted";
+    saveProgress();
+  }
+}
+
+// ── DIFFICULTY ────────────────────────────────────────────
+function setDifficulty(level) {
+  drillDifficulty = level;
+  document.getElementById("diff-basic").classList.toggle("active", level === "basic");
+  document.getElementById("diff-precise").classList.toggle("active", level === "precise");
+}
+
+// ── BEAT MODE ─────────────────────────────────────────────
+function initBeatMode() {
+  beats = [];
+  for (let i = 0; i < myLines.length; i += BEAT_SIZE) {
+    beats.push(myLines.slice(i, i + BEAT_SIZE).map((_, j) => i + j));
+  }
+  currentBeat = 0; beatLineIdx = 0;
+  renderBeatNav();
+  renderBeatLine();
+}
+
+function renderBeatNav() {
+  const nav = document.getElementById("beat-nav");
+  nav.innerHTML = "";
+  beats.forEach((b, i) => {
+    const allLearned = b.every(idx => lineConfidence[idx] === "learned");
+    const btn = document.createElement("button");
+    btn.className = "beat-pill" + (i === currentBeat ? " active" : "") + (allLearned ? " done" : "");
+    btn.textContent = `Beat ${i + 1}`;
+    btn.onclick = () => { currentBeat = i; beatLineIdx = 0; renderBeatNav(); renderBeatLine(); };
+    nav.appendChild(btn);
+  });
+}
+
+function renderBeatLine() {
+  if (!beats.length) return;
+  const beat = beats[currentBeat];
+  const lineIdx = beat[beatLineIdx];
+  const l = myLines[lineIdx];
+  document.getElementById("beat-counter").textContent = `Beat ${currentBeat + 1} of ${beats.length} · Line ${beatLineIdx + 1} of ${beat.length}`;
+  document.getElementById("beat-progress").style.width = ((currentBeat / beats.length) * 100) + "%";
+  document.getElementById("beat-scene").textContent = l.act + (l.scene_direction ? " · " + l.scene_direction : "");
+  document.getElementById("beat-cue-speaker").textContent = l.cue_speaker;
+  document.getElementById("beat-cue-text").textContent = l.cue_line;
+  document.getElementById("beat-reveal-speaker").textContent = actorName;
+  document.getElementById("beat-reveal-text").textContent = l.your_line;
+  document.getElementById("beat-input").value = "";
+  document.getElementById("beat-reveal").classList.add("hidden");
+  document.getElementById("beat-feedback").classList.add("hidden");
+  document.getElementById("beat-prev").disabled = beatLineIdx === 0 && currentBeat === 0;
+  document.getElementById("beat-next").textContent = (beatLineIdx < beat.length - 1) ? "Next in beat →" : (currentBeat < beats.length - 1) ? "Next beat →" : "Done";
+}
+
+function prevBeatLine() {
+  if (beatLineIdx > 0) { beatLineIdx--; renderBeatLine(); }
+  else if (currentBeat > 0) { currentBeat--; beatLineIdx = beats[currentBeat].length - 1; renderBeatNav(); renderBeatLine(); }
+}
+
+function nextBeatLine() {
+  const beat = beats[currentBeat];
+  if (beatLineIdx < beat.length - 1) { beatLineIdx++; renderBeatLine(); }
+  else if (currentBeat < beats.length - 1) { currentBeat++; beatLineIdx = 0; renderBeatNav(); renderBeatLine(); }
+  else { showStep("lines"); showToast("All beats complete!"); }
+}
+
+function revealBeatLine() { document.getElementById("beat-reveal").classList.remove("hidden"); }
+function clearBeatFeedback() { document.getElementById("beat-feedback").classList.add("hidden"); }
+
+async function submitBeatLine() {
+  const attempt = document.getElementById("beat-input").value.trim();
+  if (!attempt) return;
+  const lineIdx = beats[currentBeat][beatLineIdx];
+  const l = myLines[lineIdx];
+  markAttempted(lineIdx);
+  const fb = document.getElementById("beat-feedback");
+  const btn = document.getElementById("beat-submit-btn");
+  fb.innerHTML = '<span class="spinner"></span>Getting coaching...';
+  fb.className = "feedback-block loading";
+  fb.classList.remove("hidden");
+  btn.disabled = true;
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: MODEL, max_tokens: 400,
+        system: "You are a theatre director giving brief coaching. 2-3 sentences max. Be warm and specific.",
+        messages: [{ role: "user", content: `Character: ${actorName} | Act: ${l.act}\nCue: "${l.cue_line}"\nCorrect: "${l.your_line}"\nAttempt: "${attempt}"\nCoach briefly on accuracy and delivery.` }]
+      })
+    });
+    const data = await res.json();
+    fb.innerHTML = (data.content?.find(b => b.type === "text")?.text || "").replace(/\n/g, "<br/>");
+    fb.className = "feedback-block";
+    document.getElementById("beat-reveal").classList.remove("hidden");
+  } catch(e) { fb.innerHTML = "Could not get feedback."; fb.className = "feedback-block"; }
+  btn.disabled = false;
+}
+
+// ── PERFORMANCE MODE ──────────────────────────────────────
+const PASS_LABELS = ["Full text visible", "Text fades as you read", "First letters only"];
+
+function renderPerfLine() {
+  if (perfIdx >= myLines.length) {
+    if (perfPass < 2) {
+      document.getElementById("next-pass-btn").style.display = "block";
+      document.getElementById("next-pass-num").textContent = perfPass + 2;
+    } else {
+      document.getElementById("perf-complete").classList.remove("hidden");
+      document.getElementById("next-pass-btn").style.display = "none";
+    }
+    return;
+  }
+  document.getElementById("next-pass-btn").style.display = "none";
+  document.getElementById("perf-complete").classList.add("hidden");
+
+  const l = myLines[perfIdx];
+  document.getElementById("perf-counter").textContent = `Line ${perfIdx + 1} of ${myLines.length} · Pass ${perfPass + 1}`;
+  document.getElementById("perf-progress").style.width = ((perfIdx / myLines.length) * 100) + "%";
+  document.getElementById("perf-scene").textContent = l.act + (l.scene_direction ? " · " + l.scene_direction : "");
+  document.getElementById("perf-cue-speaker").textContent = l.cue_speaker;
+  document.getElementById("perf-cue-text").textContent = l.cue_line;
+  document.getElementById("perf-pass-num").textContent = perfPass + 1;
+  document.getElementById("perf-pass-label").textContent = PASS_LABELS[perfPass];
+
+  for (let i = 0; i < 3; i++) {
+    const dot = document.getElementById("pdot-" + i);
+    dot.className = "pass-dot" + (i < perfPass ? " done" : i === perfPass ? " active" : "");
+  }
+
+  let displayText = l.your_line;
+  if (perfPass === 2) {
+    displayText = l.your_line.split(" ").map(w => w[0] + "·".repeat(Math.max(0, w.length - 1))).join(" ");
+  }
+
+  const lineEl = document.getElementById("perf-line");
+  const fade = document.getElementById("perf-fade");
+  lineEl.textContent = displayText;
+  fade.style.width = "0%";
+  fade.style.transition = "none";
+
+  if (perfPass === 1) {
+    requestAnimationFrame(() => {
+      fade.style.transition = `width ${perfSpeed}ms linear`;
+      fade.style.width = "100%";
+    });
+  }
+  markAttempted(perfIdx);
+}
+
+function perfNext() { perfIdx++; renderPerfLine(); }
+function perfPrev() { if (perfIdx > 0) { perfIdx--; renderPerfLine(); } }
+
+function setSpeed(ms) {
+  perfSpeed = ms;
+  document.querySelectorAll(".speed-btn").forEach(b => {
+    b.classList.toggle("active", parseInt(b.onclick.toString().match(/\d+/)?.[0]) === ms);
+  });
+  renderPerfLine();
+}
+
+function nextPerfPass() {
+  perfPass++;
+  perfIdx = 0;
+  document.getElementById("next-pass-btn").style.display = "none";
+  renderPerfLine();
 }
 
 function showToast(msg) {
