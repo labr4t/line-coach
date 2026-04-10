@@ -391,6 +391,19 @@
     background: #fff;
   }
 
+  .loading-overlay {
+    position: fixed; inset: 0; background: rgba(250,249,246,0.96);
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; z-index: 200; gap: 1.5rem; padding: 2rem;
+    text-align: center;
+  }
+  .loading-overlay.hidden { display: none; }
+  .loading-title { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--ink); }
+  .loading-tip { font-size: 14px; color: var(--ink2); max-width: 340px; line-height: 1.7; font-style: italic; transition: opacity 0.3s; }
+  .loading-bar-wrap { width: 240px; height: 4px; background: var(--paper3); border-radius: 99px; overflow: hidden; }
+  .loading-bar { height: 100%; background: var(--stage); border-radius: 99px; transition: width 0.4s ease; width: 0%; }
+  .loading-step { font-size: 12px; color: var(--ink3); }
+
   .toast {
     position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
     background: var(--ink); color: var(--paper); font-size: 13px; font-weight: 500;
@@ -459,16 +472,18 @@
     padding: 2rem 1.5rem; margin-bottom: 1rem; min-height: 160px;
     display: flex; align-items: center; justify-content: center;
     font-family: 'Playfair Display', serif;
-    position: relative; overflow: hidden;
+    position: relative; overflow: hidden; cursor: default;
   }
   .teleprompter-line {
     font-size: clamp(18px, 4vw, 26px); line-height: 1.5;
-    text-align: center; transition: opacity 0.6s;
-    user-select: none; position: relative; z-index: 1;
+    text-align: center; user-select: none;
+    position: relative; z-index: 1; padding: 0 4px;
   }
+  .teleprompter-line .word { display: inline-block; transition: opacity 0.2s; margin: 0 3px; }
+  .teleprompter-line .word.hidden-word { opacity: 0; }
+  .teleprompter-line .word.init-word { opacity: 0.3; }
   .teleprompter-fade {
-    position: absolute; top: 0; left: 0; height: 100%;
-    background: var(--ink); z-index: 2; transition: width 0s;
+    display: none;
   }
   .teleprompter-controls {
     display: flex; gap: 8px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;
@@ -501,6 +516,13 @@
 </style>
 </head>
 <body>
+
+<div id="loading-overlay" class="loading-overlay hidden">
+  <div class="loading-title" id="loading-title">Reading your script…</div>
+  <div class="loading-bar-wrap"><div class="loading-bar" id="loading-bar"></div></div>
+  <div class="loading-step" id="loading-step"></div>
+  <div class="loading-tip" id="loading-tip"></div>
+</div>
 
 <!-- ── LANDING SCREEN ─────────────────────────────────── -->
 <div id="screen-landing">
@@ -735,9 +757,9 @@
       <span class="nav-info" id="perf-counter">Line 1 of ?</span>
       <div style="display:flex;gap:6px;align-items:center">
         <span style="font-size:11px;color:var(--ink3)">Speed:</span>
-        <button class="speed-btn" onclick="setSpeed(6000)">Slow</button>
-        <button class="speed-btn active" onclick="setSpeed(3500)">Medium</button>
-        <button class="speed-btn" onclick="setSpeed(1800)">Fast</button>
+        <button class="speed-btn" data-speed="6000" onclick="setSpeed(6000,this)">Slow</button>
+        <button class="speed-btn active" data-speed="3500" onclick="setSpeed(3500,this)">Medium</button>
+        <button class="speed-btn" data-speed="1800" onclick="setSpeed(1800,this)">Fast</button>
       </div>
     </div>
     <hr />
@@ -900,12 +922,16 @@ async function handlePDF(input) {
   const file = input.files[0];
   if (!file) return;
   document.getElementById("pdf-status").textContent = "Reading PDF...";
+  showLoading("Reading your script…", "Converting PDF to text");
+  setLoadingProgress(10, "Loading file…");
   try {
+    setLoadingProgress(25, "Preparing file…");
     const arrayBuffer = await file.arrayBuffer();
     const uint8 = new Uint8Array(arrayBuffer);
     let binary = "";
     for (let i = 0; i < uint8.length; i++) binary += String.fromCharCode(uint8[i]);
     const base64 = btoa(binary);
+    setLoadingProgress(45, "Sending to AI…");
     const res = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -920,16 +946,20 @@ async function handlePDF(input) {
         }]
       })
     });
+    setLoadingProgress(85, "Extracting text…");
     const data = await res.json();
+    setLoadingProgress(100, "Done!");
     const extracted = data.content?.find(b => b.type === "text")?.text || "";
+    hideLoading();
     if (extracted) {
       document.getElementById("script-text").value = extracted;
       switchInput("paste");
-      document.getElementById("pdf-status").textContent = "PDF extracted successfully";
+      document.getElementById("pdf-status").textContent = "PDF extracted — " + extracted.length.toLocaleString() + " characters";
     } else {
       document.getElementById("pdf-status").textContent = "Could not extract — try pasting instead";
     }
   } catch (e) {
+    hideLoading();
     document.getElementById("pdf-status").textContent = "Error: " + e.message;
   }
 }
@@ -943,8 +973,10 @@ async function scanCharacters() {
   errEl.textContent = "";
   scriptText = raw; playTitle = title;
   const btn = document.getElementById("scan-btn");
-  btn.innerHTML = '<span class="spinner"></span>Finding characters in your script&hellip;';
+  btn.innerHTML = '<span class="spinner"></span>Finding characters…';
   btn.disabled = true;
+  showLoading("Finding characters in your script…", "Analysing script structure");
+  setLoadingProgress(20);
   try {
     const res = await fetch(API_URL, {
       method: "POST",
@@ -955,13 +987,14 @@ async function scanCharacters() {
         messages: [{
           role: "user",
           content: `List every speaking character in this script. Return JSON only:
-{ "characters": ["Character One", "Character Two", ...] }
+{ "title": "Play title or empty string if not found", "characters": ["Character One", "Character Two", ...] }
 
 Script:
 ${scriptText.slice(0, 8000)}`
         }]
       })
     });
+    setLoadingProgress(70, "Reading characters…");
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error?.message || `Server error ${res.status}. Please try again.`);
@@ -972,6 +1005,10 @@ ${scriptText.slice(0, 8000)}`
     const parsed = JSON.parse(clean);
     const characters = parsed.characters || [];
     if (characters.length === 0) throw new Error("No characters found. Check the script was pasted correctly.");
+    if (parsed.title && !document.getElementById("play-title").value.trim()) {
+      document.getElementById("play-title").value = parsed.title;
+      playTitle = parsed.title;
+    }
     const sel = document.getElementById("character-select");
     sel.innerHTML = '<option value="">Choose a character...</option>';
     characters.forEach(c => {
@@ -982,8 +1019,11 @@ ${scriptText.slice(0, 8000)}`
       sel.appendChild(opt);
     });
     sel.dataset.pendingCounts = "true";
+    setLoadingProgress(100);
+    hideLoading();
     showStep("pick");
   } catch (e) {
+    hideLoading();
     errEl.textContent = e.message;
   }
   btn.innerHTML = "Scan for characters"; btn.disabled = false;
@@ -1003,8 +1043,10 @@ async function parseScript() {
   errEl.textContent = "";
   actorName = name;
   const btn = document.getElementById("parse-btn");
-  btn.innerHTML = '<span class="spinner"></span>Finding your lines...';
+  btn.innerHTML = '<span class="spinner"></span>Finding your lines…';
   btn.disabled = true;
+  showLoading(`Finding ${name}'s lines…`, "Analysing dialogue and cues");
+  setLoadingProgress(15);
   try {
     const res = await fetch(API_URL, {
       method: "POST",
@@ -1039,6 +1081,7 @@ ${scriptText.slice(0, 12000)}`
         }]
       })
     });
+    setLoadingProgress(75, "Extracting your lines…");
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error?.message || `Server error ${res.status}. Please try again.`);
@@ -1054,6 +1097,8 @@ ${scriptText.slice(0, 12000)}`
       btn.innerHTML = "Find my lines"; btn.disabled = false;
       return;
     }
+    setLoadingProgress(100, "Lines found!");
+    hideLoading();
     saveProgress();
     renderLinesOverview(summary);
     showToast(`Found ${myLines.length} lines for ${name}.`);
@@ -1062,6 +1107,7 @@ ${scriptText.slice(0, 12000)}`
     if (opt) opt.textContent = `${name} (${myLines.length} lines)`;
     showStep("lines");
   } catch (e) {
+    hideLoading();
     errEl.textContent = e.message.includes("fetch") ? "Connection error. Check your internet and try again." : e.message;
   }
   btn.innerHTML = "Find my lines"; btn.disabled = false;
@@ -1449,28 +1495,42 @@ function renderPerfLine() {
   }
 
   const lineEl = document.getElementById("perf-line");
-  const fade = document.getElementById("perf-fade");
-  lineEl.textContent = displayText;
-  fade.style.width = "0%";
-  fade.style.transition = "none";
 
-  if (perfPass === 1) {
-    requestAnimationFrame(() => {
-      fade.style.transition = `width ${perfSpeed}ms linear`;
-      fade.style.width = "100%";
+  if (perfPass === 0) {
+    // Pass 1: full text, words fade in
+    lineEl.innerHTML = l.your_line.split(" ").map((w,i) =>
+      `<span class="word" style="transition-delay:${i * 60}ms">${w}</span>`
+    ).join(" ");
+  } else if (perfPass === 1) {
+    // Pass 2: words fade out left to right after a delay
+    const words = l.your_line.split(" ");
+    lineEl.innerHTML = words.map((w,i) =>
+      `<span class="word" id="pw${i}">${w}</span>`
+    ).join(" ");
+    const delay = perfSpeed / words.length;
+    words.forEach((_, i) => {
+      setTimeout(() => {
+        const el = document.getElementById("pw" + i);
+        if (el) el.classList.add("hidden-word");
+      }, i * delay);
     });
+  } else if (perfPass === 2) {
+    // Pass 3: first letter + dots
+    lineEl.innerHTML = l.your_line.split(" ").map(w =>
+      `<span class="word init-word">${w[0]}${"·".repeat(Math.max(0, w.length-1))}</span>`
+    ).join(" ");
   }
+
   markAttempted(perfIdx);
 }
 
 function perfNext() { perfIdx++; renderPerfLine(); }
 function perfPrev() { if (perfIdx > 0) { perfIdx--; renderPerfLine(); } }
 
-function setSpeed(ms) {
+function setSpeed(ms, btn) {
   perfSpeed = ms;
-  document.querySelectorAll(".speed-btn").forEach(b => {
-    b.classList.toggle("active", parseInt(b.onclick.toString().match(/\d+/)?.[0]) === ms);
-  });
+  document.querySelectorAll(".speed-btn").forEach(b => b.classList.remove("active"));
+  if (btn) btn.classList.add("active");
   renderPerfLine();
 }
 
@@ -1479,6 +1539,36 @@ function nextPerfPass() {
   perfIdx = 0;
   document.getElementById("next-pass-btn").style.display = "none";
   renderPerfLine();
+}
+
+// ── LOADING OVERLAY ──────────────────────────────────────
+const TIPS = ["Your brain consolidates lines while you sleep. Practice before bed \u2014 wake up knowing more.", "Say lines out loud. Silent reading is for civilians. You're an actor.", "Pace while you practice. Your body remembers lines your brain forgets.", "Learn the last 2-3 words of every cue. That's the trigger, not the whole thing.", "Got stuck? Don't look immediately. Sit in the discomfort. That's where memory forms.", "Your character wants something in every single line. Know what it is before you open your mouth.", "Wrong word? Don't restart. Keep going. Real performance has no rewind button.", "Record your castmates' lines. Play it like a phone call. Answer in the gaps.", "Paraphrase the scene in your own words first. If you can tell the story, the lines come easier.", "Break the scene into beats of 3-4 lines. Conquer each one before stitching them together.", "Repetition is not memorisation. Testing yourself is. There's a difference.", "Panic is just energy. Channel it. Every great performance started as nerves.", "The line isn't just words. It's intention, subtext, and what your character is not saying.", "Imagine the scene vividly before you speak. A brain with pictures retains more than one without.", "You don't need to be word-perfect to be brilliant. You need to mean every word you say."];
+let tipInterval = null;
+
+function showLoading(title, step) {
+  document.getElementById("loading-overlay").classList.remove("hidden");
+  document.getElementById("loading-title").textContent = title;
+  document.getElementById("loading-step").textContent = step || "";
+  setLoadingProgress(0);
+  rotateTip();
+  tipInterval = setInterval(rotateTip, 4000);
+}
+
+function hideLoading() {
+  document.getElementById("loading-overlay").classList.add("hidden");
+  if (tipInterval) { clearInterval(tipInterval); tipInterval = null; }
+}
+
+function setLoadingProgress(pct, step) {
+  document.getElementById("loading-bar").style.width = pct + "%";
+  if (step) document.getElementById("loading-step").textContent = step;
+}
+
+function rotateTip() {
+  const tip = TIPS[Math.floor(Math.random() * TIPS.length)];
+  const el = document.getElementById("loading-tip");
+  el.style.opacity = "0";
+  setTimeout(() => { el.textContent = "💡 " + tip; el.style.opacity = "1"; }, 300);
 }
 
 function showToast(msg) {
