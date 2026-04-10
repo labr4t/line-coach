@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Line Coach</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎭</text></svg>">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -23,6 +23,7 @@
     --green: #0F6E56;
     --red: #a32d2d;
     --radius: 10px;
+  --mono: 'Space Mono', monospace;
     --radius-lg: 16px;
   }
 
@@ -70,7 +71,7 @@
   }
 
   .landing-title {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Instrument Serif', serif;
     font-size: clamp(48px, 8vw, 80px);
     font-weight: 400;
     line-height: 1.05;
@@ -187,7 +188,7 @@
   }
 
   .app-logo {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Instrument Serif', serif;
     font-size: 20px;
     font-weight: 400;
     color: var(--ink);
@@ -222,7 +223,7 @@
   }
 
   .card-title {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Instrument Serif', serif;
     font-size: 17px;
     font-weight: 600;
     color: var(--ink);
@@ -308,8 +309,9 @@
     border-radius: 0 var(--radius) var(--radius) 0;
     padding: 10px 14px; margin-bottom: 10px;
   }
-  .cue-speaker { font-size: 11px; font-weight: 500; color: var(--ink3); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.06em; }
-  .cue-text { font-size: 14px; line-height: 1.65; color: var(--ink2); font-style: italic; }
+  .script-text { font-family: var(--mono) !important; }
+  .cue-speaker { font-size: 11px; font-weight: 500; color: var(--ink3); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.06em; font-family: var(--mono); }
+  .cue-text { font-size: 13px; line-height: 1.65; color: var(--ink2); font-family: var(--mono); }
 
   .your-line-block {
     border-left: 3px solid var(--stage);
@@ -317,8 +319,8 @@
     border-radius: 0 var(--radius) var(--radius) 0;
     padding: 10px 14px; margin-bottom: 10px;
   }
-  .your-line-speaker { font-size: 11px; font-weight: 500; color: var(--stage); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.06em; }
-  .your-line-text { font-size: 14px; line-height: 1.65; color: #0C447C; }
+  .your-line-speaker { font-size: 11px; font-weight: 500; color: var(--stage); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.06em; font-family: var(--mono); }
+  .your-line-text { font-size: 13px; line-height: 1.65; color: #0C447C; font-family: var(--mono); }
 
   .feedback-block {
     border: 1px solid var(--paper3);
@@ -398,11 +400,46 @@
     text-align: center;
   }
   .loading-overlay.hidden { display: none; }
-  .loading-title { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--ink); }
+  .loading-title { font-family: 'Instrument Serif', serif; font-size: 18px; color: var(--ink); }
   .loading-tip { font-size: 14px; color: var(--ink2); max-width: 340px; line-height: 1.7; font-style: italic; transition: opacity 0.3s; }
   .loading-bar-wrap { width: 240px; height: 4px; background: var(--paper3); border-radius: 99px; overflow: hidden; }
   .loading-bar { height: 100%; background: var(--stage); border-radius: 99px; transition: width 0.4s ease; width: 0%; }
   .loading-step { font-size: 12px; color: var(--ink3); }
+
+  /* ── FULL PLAY VIEW ──────────────────────────────────── */
+  .fullplay-wrap {
+    font-family: var(--mono);
+    font-size: 13px; line-height: 1.9;
+    max-height: 65vh; overflow-y: auto;
+    border: 1px solid var(--paper3); border-radius: var(--radius);
+    padding: 1rem; background: var(--paper);
+  }
+  .fp-line { padding: 2px 0; }
+  .fp-speaker {
+    font-size: 11px; font-weight: 700; color: var(--ink3);
+    letter-spacing: 0.08em; text-transform: uppercase;
+    margin-top: 10px; display: block;
+  }
+  .fp-text { color: var(--ink2); }
+  .fp-mine {
+    background: var(--stage-light);
+    border-left: 3px solid var(--stage);
+    border-radius: 0 4px 4px 0;
+    padding: 4px 10px; margin: 2px 0; cursor: pointer;
+    transition: background 0.12s;
+  }
+  .fp-mine:hover { background: #d0e4f5; }
+  .fp-mine .fp-speaker { color: var(--stage); }
+  .fp-mine .fp-text { color: #0C447C; font-weight: 500; }
+  .fp-drill-hint {
+    font-size: 10px; color: var(--stage); margin-top: 2px;
+    font-family: 'DM Sans', sans-serif; letter-spacing: 0;
+    text-transform: none; font-weight: 400;
+  }
+  .fp-direction {
+    font-size: 12px; color: var(--ink3); font-style: italic;
+    padding: 2px 0; font-family: 'DM Sans', sans-serif;
+  }
 
   .toast {
     position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
@@ -471,20 +508,20 @@
     background: var(--ink); color: var(--paper); border-radius: var(--radius-lg);
     padding: 2rem 1.5rem; margin-bottom: 1rem; min-height: 160px;
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Playfair Display', serif;
     position: relative; overflow: hidden; cursor: default;
   }
   .teleprompter-line {
-    font-size: clamp(18px, 4vw, 26px); line-height: 1.5;
+    font-family: var(--mono);
+    font-size: clamp(15px, 3.5vw, 20px); line-height: 1.8;
     text-align: center; user-select: none;
-    position: relative; z-index: 1; padding: 0 4px;
+    position: relative; z-index: 1; padding: 0 4px; width: 100%;
   }
-  .teleprompter-line .word { display: inline-block; transition: opacity 0.2s; margin: 0 3px; }
-  .teleprompter-line .word.hidden-word { opacity: 0; }
-  .teleprompter-line .word.init-word { opacity: 0.3; }
-  .teleprompter-fade {
-    display: none;
+  .tp-word {
+    display: inline-block; transition: opacity 0.35s ease; margin: 0 2px;
   }
+  .tp-word.invisible { opacity: 0; }
+  .tp-word.dim { opacity: 0.28; color: var(--paper); }
+  .teleprompter-fade { display: none; }
   .teleprompter-controls {
     display: flex; gap: 8px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;
   }
@@ -625,7 +662,10 @@
         <div class="card-title" style="margin-bottom:2px" id="lines-title">Your lines</div>
         <div style="font-size:13px;color:var(--ink3)" id="lines-sub"></div>
       </div>
-      <button onclick="resetApp()" style="font-size:12px;padding:6px 12px;color:var(--red);border-color:var(--paper3)">Clear &amp; restart</button>
+      <div style="display:flex;gap:8px">
+        <button onclick="showStep('fullplay')" style="font-size:12px;padding:6px 12px;color:var(--stage);border-color:var(--stage)">Read full script</button>
+        <button onclick="resetApp()" style="font-size:12px;padding:6px 12px;color:var(--red);border-color:var(--paper3)">Clear &amp; restart</button>
+      </div>
     </div>
     <div class="conf-legend">
       <span class="conf-legend-item"><span class="conf-dot conf-green"></span>Confident</span>
@@ -642,16 +682,19 @@
         <div class="mode-card-desc">Cue by cue. Type from memory. Get coaching feedback.</div>
       </div>
       <div class="mode-card" onclick="startMode('runthrough')">
+        <span class="badge" style="background:#EAF3DE;color:#3B6D11;margin-bottom:8px;display:inline-block">Best for context</span>
         <div class="mode-card-title">Scene run-through</div>
         <div class="mode-card-desc">AI plays every other character. Best once you roughly know the scene.</div>
       </div>
       <div class="mode-card" onclick="startMode('beat')" style="min-width:200px">
+        <span class="badge" style="background:#EEEDFE;color:#534AB7;margin-bottom:8px;display:inline-block">Break it down</span>
         <div class="mode-card-title">Beat-by-beat</div>
         <div class="mode-card-desc">Learn in small chunks. Stitch beats together as you go.</div>
       </div>
       <div class="mode-card" onclick="startMode('perf')" style="min-width:200px">
+        <span class="badge" style="background:#FAECE7;color:#993C1D;margin-bottom:8px;display:inline-block">Final polish</span>
         <div class="mode-card-title">Performance mode</div>
-        <div class="mode-card-desc">Your lines scroll like a teleprompter. Text fades as you improve.</div>
+        <div class="mode-card-desc">Typewriter, fade, first letters — three passes to lock it in.</div>
       </div>
     </div>
   </div>
@@ -698,6 +741,18 @@
     <div style="margin-top:10px;text-align:right">
       <button id="drill-mark-btn" onclick="toggleLearnedCurrent()" style="font-size:12px;padding:6px 12px">Mark as learned</button>
     </div>
+  </div>
+
+  <!-- STEP 3e: Full play view -->
+  <div id="step-fullplay" class="card hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div>
+        <span style="font-size:13px;font-weight:500;color:var(--ink)">Full script</span>
+        <span style="font-size:12px;color:var(--ink3);margin-left:8px">Tap any highlighted line to drill it</span>
+      </div>
+      <button onclick="showStep('lines')" style="font-size:12px;padding:6px 12px">Back</button>
+    </div>
+    <div class="fullplay-wrap" id="fullplay-content"></div>
   </div>
 
   <!-- STEP 3c: Beat-by-beat mode -->
@@ -780,7 +835,7 @@
       <button onclick="nextPerfPass()" id="next-pass-btn" class="btn-green" style="display:none;width:100%">Start pass <span id="next-pass-num">2</span> &#8594;</button>
     </div>
     <div id="perf-complete" class="hidden" style="text-align:center;padding:2rem 0">
-      <div style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:8px">All 3 passes done.</div>
+      <div style="font-family:'Instrument Serif',serif;font-size:20px;margin-bottom:8px">All 3 passes done.</div>
       <div style="font-size:14px;color:var(--ink3);margin-bottom:16px">You've gone from full text to first-letters only. That's real memorisation.</div>
       <button onclick="showStep('lines')" class="btn-stage">Back to my lines</button>
     </div>
@@ -822,7 +877,7 @@
       </div>
     </div>
     <div id="run-complete" class="hidden" style="text-align:center;padding:2.5rem 0">
-      <div style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:8px">Scene complete.</div>
+      <div style="font-family:'Instrument Serif',serif;font-size:22px;margin-bottom:8px">Scene complete.</div>
       <div style="font-size:14px;color:var(--ink3);margin-bottom:1.25rem">Well done running through the whole scene.</div>
       <button onclick="showStep('lines')" class="btn-stage">Back to my lines</button>
     </div>
@@ -844,6 +899,36 @@ let drillDifficulty = "basic";
 let beats = [], currentBeat = 0, beatLineIdx = 0;
 let perfIdx = 0, perfPass = 0, perfSpeed = 3500, perfTimer = null;
 const BEAT_SIZE = 4;
+
+// ── SMART FETCH WITH RETRY ────────────────────────────────
+async function fetchWithRetry(body, attempt = 1) {
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    if (res.status === 529 || res.status === 503 || res.status === 529) {
+      if (attempt < 3) {
+        const waitSec = attempt * 2;
+        setLoadingProgress(null, `AI is busy, retrying in ${waitSec}s…`);
+        await new Promise(r => setTimeout(r, waitSec * 1000));
+        return fetchWithRetry(body, attempt + 1);
+      }
+      throw new Error("The AI is overloaded right now. Your progress is saved — tap Try Again when ready.");
+    }
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || `Server error ${res.status}. Please try again.`);
+    }
+    return res;
+  } catch (e) {
+    if (e.message.includes("fetch") || e.message.includes("network") || e.message.includes("Failed")) {
+      throw new Error("Connection error. Check your internet and try again.");
+    }
+    throw e;
+  }
+}
 
 // ── SAVE / LOAD ───────────────────────────────────────────
 function saveProgress() {
@@ -932,19 +1017,15 @@ async function handlePDF(input) {
     for (let i = 0; i < uint8.length; i++) binary += String.fromCharCode(uint8[i]);
     const base64 = btoa(binary);
     setLoadingProgress(45, "Sending to AI…");
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: MODEL, max_tokens: 4096,
-        messages: [{
-          role: "user",
-          content: [
-            { type: "document", source: { type: "base64", media_type: "application/pdf", data: base64 } },
-            { type: "text", text: "Extract the full text of this script exactly as written. Return only the raw script text, preserving all speaker names, dialogue, and stage directions. No commentary." }
-          ]
-        }]
-      })
+    const res = await fetchWithRetry({
+      model: MODEL, max_tokens: 4096,
+      messages: [{
+        role: "user",
+        content: [
+          { type: "document", source: { type: "base64", media_type: "application/pdf", data: base64 } },
+          { type: "text", text: "Extract the full text of this script exactly as written. Return only the raw script text, preserving all speaker names, dialogue, and stage directions. No commentary." }
+        ]
+      }]
     });
     setLoadingProgress(85, "Extracting text…");
     const data = await res.json();
@@ -978,27 +1059,19 @@ async function scanCharacters() {
   showLoading("Finding characters in your script…", "Analysing script structure");
   setLoadingProgress(20);
   try {
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: MODEL, max_tokens: 512,
-        system: "You are a script analyser. Return only valid JSON, no markdown.",
-        messages: [{
-          role: "user",
-          content: `List every speaking character in this script. Return JSON only:
+    const res = await fetchWithRetry({
+      model: MODEL, max_tokens: 512,
+      system: "You are a script analyser. Return only valid JSON, no markdown.",
+      messages: [{
+        role: "user",
+        content: `List every speaking character in this script. Return JSON only:
 { "title": "Play title or empty string if not found", "characters": ["Character One", "Character Two", ...] }
 
 Script:
 ${scriptText.slice(0, 8000)}`
-        }]
-      })
+      }]
     });
     setLoadingProgress(70, "Reading characters…");
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error?.message || `Server error ${res.status}. Please try again.`);
-    }
     const data = await res.json();
     const text = data.content?.find(b => b.type === "text")?.text || "";
     const clean = text.replace(/```json|```/g, "").trim();
@@ -1048,15 +1121,12 @@ async function parseScript() {
   showLoading(`Finding ${name}'s lines…`, "Analysing dialogue and cues");
   setLoadingProgress(15);
   try {
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: MODEL, max_tokens: 4096,
-        system: "You are a script analyser. Extract structured data from theatre scripts. Return only valid JSON, no markdown.",
-        messages: [{
-          role: "user",
-          content: `Analyse this script and extract every line spoken by "${name}".
+    const res = await fetchWithRetry({
+      model: MODEL, max_tokens: 4096,
+      system: "You are a script analyser. Extract structured data from theatre scripts. Return only valid JSON, no markdown.",
+      messages: [{
+        role: "user",
+        content: `Analyse this script and extract every line spoken by "${name}".
 
 For each of ${name}'s lines return:
 - "act": the act name/number
@@ -1078,8 +1148,7 @@ Return JSON in this exact format:
 
 Script:
 ${scriptText.slice(0, 12000)}`
-        }]
-      })
+      }]
     });
     setLoadingProgress(75, "Extracting your lines…");
     if (!res.ok) {
@@ -1188,12 +1257,9 @@ async function submitDrillLine() {
   fb.classList.remove("hidden");
   btn.disabled = true;
   try {
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: MODEL, max_tokens: 600,
-        system: "You are an experienced theatre director giving warm, specific, actionable coaching to an actor. Be encouraging but honest. Keep feedback to 3-4 sentences max. Focus on: accuracy, pacing, emotional tone, and character motivation.",
+    const res = await fetchWithRetry({
+      model: MODEL, max_tokens: 600,
+      system: "You are an experienced theatre director giving warm, specific, actionable coaching to an actor. Be encouraging but honest. Keep feedback to 3-4 sentences max. Focus on: accuracy, pacing, emotional tone, and character motivation.",
         messages: [{
           role: "user",
           content: `Character: ${actorName}
@@ -1208,11 +1274,11 @@ Actor typed: "${attempt}"
 
 ${drillDifficulty === "precise" ? "Precision mode: mark every single word that differs from the correct line." : "Basic mode: paraphrasing is acceptable, focus on meaning and delivery."}
 Give delivery coaching. Note accuracy, then give specific advice on pacing, emotional emphasis, and character motivation. End with one encouragement.`
-        }]
-      })
+      }]
     });
     const data = await res.json();
-    const text = data.content?.find(b => b.type === "text")?.text || "No feedback received.";
+    const text = data.content?.find(b => b.type === "text")?.text || "";
+    if (!text) throw new Error("No response from AI. Please try again.");
     fb.innerHTML = text.replace(/\n/g, "<br/>");
     fb.className = "feedback-block";
     document.getElementById("drill-reveal").classList.remove("hidden");
@@ -1287,12 +1353,9 @@ async function submitRunLine() {
   document.getElementById("run-next-wrap").classList.remove("hidden");
   btn.disabled = true;
   try {
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: MODEL, max_tokens: 400,
-        system: "You are a theatre director giving brief, warm in-rehearsal notes. Keep it to 2-3 sentences. Be specific and encouraging.",
+    const res = await fetchWithRetry({
+      model: MODEL, max_tokens: 400,
+      system: "You are a theatre director giving brief, warm in-rehearsal notes. Keep it to 2-3 sentences. Be specific and encouraging.",
         messages: [{
           role: "user",
           content: `Character: ${actorName} | Act: ${l.act}
@@ -1301,15 +1364,14 @@ Correct line: "${l.your_line}"
 ${l.stage_direction ? "Stage direction: " + l.stage_direction : ""}
 Actor delivered: "${attempt}"
 Give a quick director's note on accuracy, emotion, and delivery.`
-        }]
-      })
+      }]
     });
     const data = await res.json();
     const text = data.content?.find(b => b.type === "text")?.text || "";
-    fb.innerHTML = text.replace(/\n/g, "<br/>");
+    fb.innerHTML = (text || "No response. Try again.").replace(/\n/g, "<br/>");
     fb.className = "feedback-block";
   } catch (e) {
-    fb.innerHTML = "Could not get feedback.";
+    fb.innerHTML = `<span style="color:var(--red)">${e.message}</span> <button onclick="submitRunLine()" style="font-size:12px;margin-left:8px">Retry</button>`;
     fb.className = "feedback-block";
   }
   btn.disabled = false;
@@ -1322,9 +1384,10 @@ function advanceRunthrough() {
 }
 
 function showStep(step) {
-  ["setup", "pick", "lines", "drill", "runthrough", "beat", "perf"].forEach(s => {
+  ["setup", "pick", "lines", "drill", "runthrough", "beat", "perf", "fullplay"].forEach(s => {
     document.getElementById("step-" + s).classList.toggle("hidden", s !== step);
   });
+  if (step === "fullplay") renderFullPlay();
 }
 
 // ── CONFIDENCE ────────────────────────────────────────────
@@ -1442,13 +1505,10 @@ async function submitBeatLine() {
   fb.classList.remove("hidden");
   btn.disabled = true;
   try {
-    const res = await fetch(API_URL, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: MODEL, max_tokens: 400,
-        system: "You are a theatre director giving brief coaching. 2-3 sentences max. Be warm and specific.",
-        messages: [{ role: "user", content: `Character: ${actorName} | Act: ${l.act}\nCue: "${l.cue_line}"\nCorrect: "${l.your_line}"\nAttempt: "${attempt}"\nCoach briefly on accuracy and delivery.` }]
-      })
+    const res = await fetchWithRetry({
+      model: MODEL, max_tokens: 400,
+      system: "You are a theatre director giving brief coaching. 2-3 sentences max. Be warm and specific.",
+      messages: [{ role: "user", content: `Character: ${actorName} | Act: ${l.act}\nCue: "${l.cue_line}"\nCorrect: "${l.your_line}"\nAttempt: "${attempt}"\nCoach briefly on accuracy and delivery.` }]
     });
     const data = await res.json();
     fb.innerHTML = (data.content?.find(b => b.type === "text")?.text || "").replace(/\n/g, "<br/>");
@@ -1495,30 +1555,32 @@ function renderPerfLine() {
   }
 
   const lineEl = document.getElementById("perf-line");
+  const words = l.your_line.split(" ");
 
   if (perfPass === 0) {
-    // Pass 1: full text, words fade in
-    lineEl.innerHTML = l.your_line.split(" ").map((w,i) =>
-      `<span class="word" style="transition-delay:${i * 60}ms">${w}</span>`
+    // Pass 1: typewriter — words appear one by one
+    lineEl.innerHTML = words.map(w =>
+      `<span class="tp-word invisible">${w}</span>`
     ).join(" ");
-  } else if (perfPass === 1) {
-    // Pass 2: words fade out left to right after a delay
-    const words = l.your_line.split(" ");
-    lineEl.innerHTML = words.map((w,i) =>
-      `<span class="word" id="pw${i}">${w}</span>`
-    ).join(" ");
-    const delay = perfSpeed / words.length;
-    words.forEach((_, i) => {
-      setTimeout(() => {
-        const el = document.getElementById("pw" + i);
-        if (el) el.classList.add("hidden-word");
-      }, i * delay);
+    const spans = lineEl.querySelectorAll(".tp-word");
+    spans.forEach((sp, i) => {
+      setTimeout(() => sp.classList.remove("invisible"), i * 120);
     });
+
+  } else if (perfPass === 1) {
+    // Pass 2: full line visible, then entire line fades out as one block
+    lineEl.innerHTML = `<span class="tp-word" id="perf-fullline" style="transition:opacity ${perfSpeed}ms linear">${l.your_line}</span>`;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const el = document.getElementById("perf-fullline");
+      if (el) el.style.opacity = "0";
+    }));
+
   } else if (perfPass === 2) {
-    // Pass 3: first letter + dots
-    lineEl.innerHTML = l.your_line.split(" ").map(w =>
-      `<span class="word init-word">${w[0]}${"·".repeat(Math.max(0, w.length-1))}</span>`
-    ).join(" ");
+    // Pass 3: first letter + underscores, Space Mono renders this cleanly
+    lineEl.innerHTML = words.map(w => {
+      const hint = w[0] + "_".repeat(Math.max(0, w.length - 1));
+      return `<span class="tp-word dim">${hint}</span>`;
+    }).join(" ");
   }
 
   markAttempted(perfIdx);
@@ -1539,6 +1601,127 @@ function nextPerfPass() {
   perfIdx = 0;
   document.getElementById("next-pass-btn").style.display = "none";
   renderPerfLine();
+}
+
+// ── FULL PLAY VIEW ────────────────────────────────────────
+function renderFullPlay() {
+  const wrap = document.getElementById("fullplay-content");
+  if (!wrap) return;
+  wrap.innerHTML = "";
+
+  // Build a set of your lines for quick lookup by text content
+  const myLineTexts = new Set(myLines.map(l => l.your_line.trim()));
+  const myLineByText = {};
+  myLines.forEach((l, i) => { myLineByText[l.your_line.trim()] = i; });
+
+  // Parse raw script line by line
+  const rawLines = scriptText.split("\n");
+  let currentSpeaker = "";
+
+  rawLines.forEach(raw => {
+    const trimmed = raw.trim();
+    if (!trimmed) return;
+
+    // Detect stage directions (lines in parentheses or brackets)
+    if ((trimmed.startsWith("(") && trimmed.endsWith(")")) ||
+        (trimmed.startsWith("[") && trimmed.endsWith("]"))) {
+      const div = document.createElement("div");
+      div.className = "fp-direction";
+      div.textContent = trimmed;
+      wrap.appendChild(div);
+      return;
+    }
+
+    // Detect speaker lines — pattern: "Name:" or "NAME:" at start
+    const speakerMatch = trimmed.match(/^([A-Z][A-Za-z\s]+?):\s*(.*)$/);
+    if (speakerMatch) {
+      currentSpeaker = speakerMatch[1].trim();
+      const dialogue = speakerMatch[2].trim();
+
+      const isMe = currentSpeaker.toLowerCase() === actorName.toLowerCase();
+      const lineText = dialogue || "";
+
+      const div = document.createElement("div");
+      div.className = "fp-line";
+
+      const inner = document.createElement("div");
+      inner.className = isMe ? "fp-mine" : "";
+
+      const speakerEl = document.createElement("span");
+      speakerEl.className = "fp-speaker";
+      speakerEl.textContent = currentSpeaker;
+      inner.appendChild(speakerEl);
+
+      if (lineText) {
+        const textEl = document.createElement("div");
+        textEl.className = "fp-text";
+        textEl.textContent = lineText;
+        inner.appendChild(textEl);
+      }
+
+      if (isMe && lineText) {
+        const hint = document.createElement("div");
+        hint.className = "fp-drill-hint";
+        hint.textContent = "↗ Tap to drill this line";
+        inner.appendChild(hint);
+
+        // Find best matching line index
+        const idx = findClosestLineIdx(lineText);
+        inner.onclick = () => {
+          currentLineIdx = idx;
+          showStep("drill");
+          renderDrillLine();
+          showToast("Drilling line " + (idx + 1));
+        };
+      }
+
+      div.appendChild(inner);
+      wrap.appendChild(div);
+      return;
+    }
+
+    // Continuation of dialogue (no speaker prefix)
+    if (trimmed && currentSpeaker) {
+      const isMe = currentSpeaker.toLowerCase() === actorName.toLowerCase();
+      const div = document.createElement("div");
+      const inner = document.createElement("div");
+      inner.className = isMe ? "fp-mine" : "";
+      const textEl = document.createElement("div");
+      textEl.className = "fp-text";
+      textEl.textContent = trimmed;
+      inner.appendChild(textEl);
+      if (isMe) {
+        const hint = document.createElement("div");
+        hint.className = "fp-drill-hint";
+        hint.textContent = "↗ Tap to drill this line";
+        inner.appendChild(hint);
+        const idx = findClosestLineIdx(trimmed);
+        inner.onclick = () => { currentLineIdx = idx; showStep("drill"); renderDrillLine(); showToast("Drilling line " + (idx + 1)); };
+      }
+      div.appendChild(inner);
+      wrap.appendChild(div);
+    }
+  });
+
+  if (!wrap.children.length) {
+    wrap.innerHTML = `<div style="color:var(--ink3);font-family:'DM Sans',sans-serif;padding:1rem;text-align:center">Could not parse the script into dialogue format. Try using the practice modes instead.</div>`;
+  }
+}
+
+function findClosestLineIdx(text) {
+  const t = text.trim().toLowerCase();
+  let best = 0, bestScore = 0;
+  myLines.forEach((l, i) => {
+    const lt = l.your_line.trim().toLowerCase();
+    if (lt === t) { best = i; bestScore = 999; return; }
+    // Score by shared starting characters
+    let score = 0;
+    for (let c = 0; c < Math.min(t.length, lt.length); c++) {
+      if (t[c] === lt[c]) score++; else break;
+    }
+    if (score > bestScore) { bestScore = score; best = i; }
+  });
+  return best;
 }
 
 // ── LOADING OVERLAY ──────────────────────────────────────
